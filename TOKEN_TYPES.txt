@@ -1,0 +1,59 @@
+TOKEN TYPES
+
+TT_KEYWORD
+TT_IDENTIFIER
+TT_EOL // konec radku
+
+TT_INTEGER //cele cislo
+TT_DOUBLE //desetinne 
+TT_STRING //retezec
+
+TT_ERROR //nepovoleny lexem
+
+
+//OPERATORS
+
+TT_PLUS // +
+TT_MINUS // -
+TT_MUL // *
+TT_DIV // /
+
+TT_ASSIGN // =
+TT_LESS_THAN // <
+TT_MORE_THAN // >
+TT_LESS_OR_EQUAL // <=
+TT_MORE_OR_EQUAL // >=
+TT_IS_EQUAL // ==
+TT_NOT_EQUAL // !=
+
+//DELIMITERS
+
+TT_DOT // . ocekavam desetinne cislo
+TT_COMMA // , ocekavam argumenty
+TT_LEFT_BRACKET // (
+TT_RIGHT_BRACKET // )
+
+
+------------------------------------------------
+//KEYWORDS
+
+KW_DEF
+KW_DO
+KW_ELSE
+KW_END
+KW_IF
+KW_NOT
+KW_NIL
+KW_THEN
+KW_WHILE
+
+//VESTAVENE FUNKCE JSOU TAKY KLICOVA SLOVA
+
+KW_INPUTS 
+KW_INPUTI
+KW_INPUTF
+KW_PRINT
+KW_LENGTH
+KW_SUBSTR
+KW_ORD
+KW_CHR
