@@ -1,0 +1,14 @@
+RULES LIST
+
+STUFF INSIDE THE BRACKETS TO BE READ AS IS
+
+Example: [IF ( EXRP] means that a clause is  "IF" "OPENING BRACKET" "EXPRESSION" in that exact order
+
+
+ASSIGNMENT == [ID = EXPR]
+CLAUSE     == [IF ( EXPR]
+CYCLE      == [WHILE EXPR DO]
+BUILT-IN-F == [ID = FCNAME]
+DEF FCN    == [DEF ID (]
+EXPR       == [ ( EXPR [REL]/[BIN]/[STR]/[AR] EXPR ) ] / [ID/INT/FLOAT/STRING] //EXPR can can be INT,ID,FLOAT,STRING 
+																			   //or a combination of two EXPR with a relation,binary,string or arythmetic operator in between,can also be enclosed in parentheses
