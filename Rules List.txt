@@ -10,5 +10,6 @@ CLAUSE     == [IF ( EXPR]
 CYCLE      == [WHILE EXPR DO]
 BUILT-IN-F == [ID = FCNAME]
 DEF FCN    == [DEF ID (]
-EXPR       == [ ( EXPR [REL]/[BIN]/[STR]/[AR] EXPR ) ] / [ID/INT/FLOAT/STRING] //EXPR can can be INT,ID,FLOAT,STRING 
-																			   //or a combination of two EXPR with a relation,binary,string or arythmetic operator in between,can also be enclosed in parentheses
+EXPR       == [ ( EXPR [REL]/[BIN]/[STR]/[AR] EXPR ) ] / [ID/INT/FLOAT/STRING] 
+
+//EXPR can can be INT,ID,FLOAT,STRING or a combination of two EXPR with a relation,binary,string or arythmetic operator in between,can also be enclosed in parentheses
