@@ -30,6 +30,7 @@ Example: IF ( EXRP means that a clause is  "IF" "OPENING BRACKET" "EXPRESSION" i
   COMMAND    -> CYCLE EOL
   COMMAND    -> FCNCALL
   COMMAND    -> COMMAND COMMAND
+  E          -> COMMAND
   E          -> FCN DEF EOL FCN DEF
   E          -> E EOL E
 
