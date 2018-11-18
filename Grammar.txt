@@ -1,16 +1,38 @@
-RULES LIST
+GRAMMAR IFJ(N,T,P,S)
 
-STUFF INSIDE THE BRACKETS TO BE READ AS IS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Example: [IF ( EXRP] means that a clause is  "IF" "OPENING BRACKET" "EXPRESSION" in that exact order
+TERMINALS: ID, INT, FLOAT, STRING, DEF, ID, (, ), ., ,, DEF, DO, ELSE, END, IF, NOT, NIL, THEN, WHILE, INPUTS, INPUTI, INPUTF, PRINT, LENGTH, SUBSTR, ORD, CHR, +, -, *, /, =, <, >, <=, >=, ==, !=
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+NONTERMINALS: ASSIGNMENT, CLAUSE, CYCLE, FCN DEF, EXPR, COMMAND, E
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RULES:
+
+STUFF TO BE READ AS IS
+
+Example: IF ( EXRP means that a clause is  "IF" "OPENING BRACKET" "EXPRESSION" in that exact order
 
 
-ASSIGNMENT == [ID = EXPR]
-CLAUSE     == [IF ( EXPR]
-CYCLE      == [WHILE EXPR DO]
-BUILT-IN-F == [ID = FCNAME]
-DEF FCN    == [DEF ID (]
-EXPR       == [ ( EXPR [REL]/[BIN]/[STR]/[AR] EXPR ) ] / [ID/INT/FLOAT/STRING] 
+  ASSIGNMENT -> ID = EXPR EOL
+  CLAUSE     -> IF EXPR THEN EOL COMMAND END
+  CLAUSE     -> CLAUSE ELSE EOL COMMAND END
+  CYCLE      -> WHILE EXPR DO EOL COMMAND END
+  FCNDEF     -> DEF ID ( EXPR ) EOL COMMAND END
+  FCNARG     -> ( EXPR , EXPR , ...)
+  FCNCALL    -> ID = EXPR (FCNARG) EOL
+  EXPR       -> ( EXPR OPERATOR EXPR )  ||  ID||INT||FLOAT||STRING
+  COMMAND    -> ASSIGNMENT EOL
+  COMMAND    -> CLAUSE EOL
+  COMMAND    -> CYCLE EOL
+  COMMAND    -> FCNCALL
+  COMMAND    -> COMMAND COMMAND
+  E          -> FCN DEF EOL FCN DEF
+  E          -> E EOL E
+
 
 // EXPR can can be INT,ID,FLOAT,STRING or a combination of two EXPR with a relation,binary,string
 // or arythmetic operator in between,can also be enclosed in parentheses
