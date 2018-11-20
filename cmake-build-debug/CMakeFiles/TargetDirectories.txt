@@ -1,0 +1,3 @@
+D:/IFJ/IFJ18/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+D:/IFJ/IFJ18/cmake-build-debug/CMakeFiles/IFJ18.dir
+D:/IFJ/IFJ18/cmake-build-debug/CMakeFiles/edit_cache.dir

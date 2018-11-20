@@ -1,0 +1,2 @@
+C:\MinGW\bin\ar.exe qc libIFJ18.a  CMakeFiles/IFJ18.dir/parser.c.obj CMakeFiles/IFJ18.dir/stackgenerator.c.obj CMakeFiles/IFJ18.dir/BSTsymtable.c.obj CMakeFiles/IFJ18.dir/expression.c.obj
+C:\MinGW\bin\ranlib.exe libIFJ18.a

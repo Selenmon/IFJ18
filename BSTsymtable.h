@@ -1,3 +1,6 @@
+//
+// Created by Selenmon on 20.11.2018.
+//
 #ifndef  _BSTSYMTABLE_H
 #define  _BSTSYMTABLE_H
 
@@ -16,7 +19,7 @@ typedef enum {
 typedef struct {
     Data_Type type;
     bool defined;
-   // Dynamic_string *params;     //params in string for TO DO
+    // Dynamic_string *params;     //params in string for TO DO
     char *identifier;
 }TData ;
 
@@ -71,5 +74,6 @@ bool BST_symtable_Delete (tBSTNodePtr *,char K);
 void BST_symtable_Free (tBSTNodePtr *);
 
 #endif //_BSTSYMTABLE_H
+
 
 
