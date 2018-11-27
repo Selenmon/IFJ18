@@ -6,8 +6,8 @@
 typedef struct 
 {
 	char *str;
-	unstigned int len;
-	unstigned int size;
+	unsigned int len;
+	unsigned int size;
 } dynamic_string;
 
 void string_clear (dynamic_string *s);
