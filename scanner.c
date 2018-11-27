@@ -8,7 +8,6 @@
 
 
 FILE *SourceFile;
-tToken *TokenStructure;
 
 dynamic_string *Dynamic_string
 
@@ -20,20 +19,21 @@ int freeDynamicString(int exit_code, dynamic_string *string) {
 	return exit_code;
 }
 
-int getIdentifier(dynamic_string *string, TokenStructure *Token) {
+int getIdentifier(dynamic_string *string, tToken *Token) {
 	//TODO
 }
 
-int getInteger(dynamic_string *string, TokenStructure *Token) {
+int getInteger(dynamic_string *string, tToken *Token) {
 	//TODO
 }
 
-int getDecimal(dynamic_string *string, TokenStructure *Token) {
+int getDecimal(dynamic_string *string, tToken *Token) {
+) {
 	//TODO
 }
 
 //hlavni funkce
-int getToken(TokenStructure *Token) {
+int getToken(tToken *Token) {
 
 	tState State = ST_START;
 	Token->Type = TT_EMPTY;
