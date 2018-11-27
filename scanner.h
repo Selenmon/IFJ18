@@ -102,14 +102,14 @@ typedef union {
 } tTokenData;
 
 //struktura tokenu pro parser
-typedef struct token {
+typedef struct {
 	
 	tTokenType Type;
 	tTokenData Data;
 
 } tToken;
 
-extern tToken TokenStructure;
 
 
-int getToken(TokenStructure *Token);
+
+int getToken(tToken *Token);
