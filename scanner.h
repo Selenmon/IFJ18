@@ -110,6 +110,4 @@ typedef struct {
 } tToken;
 
 
-
-
 int getToken(tToken *Token);
