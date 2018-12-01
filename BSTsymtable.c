@@ -14,17 +14,17 @@ void BST_symtable_init (tBSTNodePtr *RootPtr){
 bool BST_symtable_Insert (tBSTNodePtr *RootPtr,char K, TData Content){
     if (*RootPtr == NULL)
     {
-        tBSTNodePtr hojo = malloc(sizeof(struct tBSTsymtable));
-        if (hojo == NULL){
+        tBSTNodePtr tmp = malloc(sizeof(struct tBSTsymtable));
+        if (tmp == NULL){
             return false;
         }
         else
         {
-            hojo->Key = K;
-            hojo->data = Content;
-            hojo->RPtr = NULL;
-            hojo->LPtr = NULL;
-            *RootPtr = hojo;
+            tmp->Key = K;
+            tmp->data = Content;
+            tmp->RPtr = NULL;
+            tmp->LPtr = NULL;
+            *RootPtr = tmp;
         }
     }
     else

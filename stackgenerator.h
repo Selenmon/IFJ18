@@ -12,7 +12,7 @@
 
 typedef struct stack_item
 {
-    Potential_symbol symbol;
+    Prec_table_symbol symbol;
     Data_Type data_type;
     struct stack_item *next;
 } Token_stack_item;
@@ -37,7 +37,7 @@ void token_stack_init(Token_stack* stack);
  * @param type Data type of token
  * @return True if successful else false
  */
-bool token_stack_push(Token_stack* stack, Potential_symbol symbol, Data_Type type);
+bool token_stack_push(Token_stack* stack, Prec_table_symbol symbol, Data_Type type);
 
 /**
  * @brief Function pulls top token from stack
@@ -71,7 +71,7 @@ Token_stack_item* token_stack_top_terminal(Token_stack* stack);
  * @param type Data type of token
  * @return True if successful else false
  */
-bool token_stack_insert_after_top_terminal(Token_stack* stack, Potential_symbol symbol, Data_Type type);
+bool token_stack_insert_after_top_terminal(Token_stack* stack, Prec_table_symbol symbol, Data_Type type);
 
 /**
  * @brief Function returns top symbol of stack

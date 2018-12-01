@@ -5,13 +5,14 @@
 #define  _BSTSYMTABLE_H
 
 #include <stdbool.h>
+#include "dynamic_string.h"
 
 // #include "dynamic_string"
 
 typedef enum {
-    TYPE_UNDEFINED,
+    TYPE_NIL,
     TYPE_INT,
-    TYPE_DOUBLE,
+    TYPE_FLOAT,
     TYPE_STRING,
     TYPE_BOOL,
 }Data_Type ;
@@ -19,8 +20,9 @@ typedef enum {
 typedef struct {
     Data_Type type;
     bool defined;
-    // Dynamic_string *params;     //params in string for TO DO
+    dynamic_string *params;
     char *identifier;
+    bool globalvar;
 }TData ;
 
 typedef struct tBSTsymtable {
