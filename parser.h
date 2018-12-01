@@ -4,26 +4,27 @@
 #include <stdbool.h>
 
 #include "scanner.h"
-#include "symtable.h"
+#include "BSTsymtable.h"
 
 
 typedef struct
 {
+    struct tBSTsymtable global_table;
+    struct tBSTsymtable local_table;
+    tToken token;
+    TData* current_id;
+    TData* ls_id;
+    TData* rs_id;
 
-    Token token;                //token
-    TData* current_id;          //ID of processed function
-    TData* ls_id;               //ID of left-side variable
-    TData* rs_id;               //ID of right-side function or expression
+    unsigned param_index;
+    int label_index;
+    int label_depth;
 
-    unsigned param_index;       //Index of current param
-    int label_index;            //Index for generating unique labels
-    int label_depth;            //Depth of labels
-
-    bool in_function;           // is 1 if parser is in function
-    bool in_declaration;        // is 1 if param rule should add or check
-    bool in_while_or_if;        // is 1 if parser is in construction while, if or then
-    bool non_declared_function;  // is 1 if parser is in function only defined
-};
+    bool in_function;
+    bool in_declaration;
+    bool in_while_or_if;
+    bool non_declared_function;
+} ParserData;
 
 int analyse();
 
