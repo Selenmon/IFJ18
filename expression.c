@@ -2,9 +2,10 @@
 #include "scanner.h"
 #include "expression.h"
 #include "stackgenerator.h"
-#include "BSTsymtable.h"
+#include "bstsymtable.h"
 #include "error.h"
 #include "code_generator.h"
+#include "code_generator.c"
 
 
 #define TABLE_SIZE 8
@@ -19,34 +20,34 @@
 Token_stack stack;
 typedef enum
 {
-    S,    /// < SHIFT
-    E,    /// = EQUAL
-    R,    /// > REDUCE
-    N     /// # ERROR
+    S,    // < SHIFT
+    E,    // = EQUAL
+    R,    // > REDUCE
+    N     // # ERROR
 } Prec_table_sign_enum;
 
 typedef enum
 {
-    I_PLUS_MINUS,		/// 0 +-
-    I_MUL_DIV,			/// */
-    I_REL_OP,			/// 3 r
-    I_LEFT_BRACKET,		/// 4 (
-    I_RIGHT_BRACKET,	/// 5 )
-    I_DATA,				/// 6 i
-    I_DOLLAR			/// 7 $
+    INDEX_PLUS_MINUS,		// 0 +-
+    INDEX_MUL_DIV,			// */
+    INDEX_REL_OP,			// 3 r
+    INDEX_LEFT_BRACKET,		// 4 (
+    INDEX_RIGHT_BRACKET,	// 5 )
+    INDEX_DATA,				// 6 i
+    INDEX_DOLLAR			// 7 $
 } Prec_table_index_enum;
 
 int prec_table[TABLE_SIZE][TABLE_SIZE] =
         {
-//	|+- | */| \ | r | ( | ) | i | $ |
-                { R , S , S , R , S , R , S , R }, /// +-
-                { R , R , R , R , S , R , S , R }, /// */
-                { R , S , R , R , S , R , S , R }, /// \ /
-                { S , S , S , N , S , R , S , R }, /// r (realtion operators) = <> <= < >= >
-                { S , S , S , S , S , E , S , N }, /// (
-                { R , R , R , R , N , R , N , R }, /// )
-                { R , R , R , R , N , R , N , R }, /// i (id, int, double, string)
-                { S , S , S , S , S , N , S , N }  /// $
+            //	|+- | */| \ | r | ( | ) | i | $ |
+                { R , S , S , R , S , R , S , R }, // +-
+                { R , R , R , R , S , R , S , R }, // */
+                { R , S , R , R , S , R , S , R }, // \ /
+                { S , S , S , N , S , R , S , R }, // r (realtion operators) = <> <= < >= >
+                { S , S , S , S , S , E , S , N }, // (
+                { R , R , R , R , N , R , N , R }, // )
+                { R , R , R , R , N , R , N , R }, // i (id, int, double, string)
+                { S , S , S , S , S , N , S , N }  // $
         };
 
 
@@ -56,11 +57,11 @@ static Prec_table_index_enum get_prec_table_index(Prec_table_symbol symbol)
     {
         case PLUS:
         case MINUS:
-            return I_PLUS_MINUS;
+            return INDEX_PLUS_MINUS;
 
         case MUL:
         case DIV:
-            return I_MUL_DIV;
+            return INDEX_MUL_DIV;
 
         case EQ:
         case NEQ:
@@ -68,22 +69,22 @@ static Prec_table_index_enum get_prec_table_index(Prec_table_symbol symbol)
         case LSTN:
         case MREQ:
         case MRTN:
-            return I_REL_OP;
+            return INDEX_REL_OP;
 
         case LEFT_BRACKET:
-            return I_LEFT_BRACKET;
+            return INDEX_LEFT_BRACKET;
 
         case RIGHT_BRACKET:
-            return I_RIGHT_BRACKET;
+            return INDEX_RIGHT_BRACKET;
 
         case IDENTIFIER:
         case INT:
         case FLOAT:
         case STRING:
-            return I_DATA;
+            return INDEX_DATA;
 
         default:
-            return I_DOLLAR;
+            return INDEX_DOLLAR;
     }
 }
 
@@ -129,14 +130,6 @@ static Prec_table_symbol get_symbol_from_token(tToken* token)
     }
 }
 
-
-/**
- * Function converts token type to data type.
- *
- * @param token Pointer to token.
- * @param data Pointer to parser's internal data.
- * @return Returns data type of actual token.
- */
 static Data_Type get_data_type(tToken* token, ParserData* data)
 {
     TData* symbol;
@@ -252,16 +245,6 @@ static Prec_rules test_rule(int num, Token_stack_item* op1, Token_stack_item* op
 }
 
 
-/**
- * Function checks semantics of operands according to rule.
- *
- * @param rule Pointer to table.
- * @param op1 Symbol 1.
- * @param op2 Symbol 2.
- * @param op3 Symbol 3.
- * @param final_type Sets data type which will be after executing rule.
- * @return Given exit code.
- */
 static int check_semantics(Prec_rules rule, Token_stack_item* op1, Token_stack_item* op2, Token_stack_item* op3, Data_Type* final_type)
 {
     bool retype_op1_to_double = false;
@@ -391,13 +374,6 @@ static int check_semantics(Prec_rules rule, Token_stack_item* op1, Token_stack_i
     return SYNTAX_OK;
 }
 
-
-/**
- * Function reduces symbols after STOP symbol if rule for reducing is found.
- *
- * @param data Pointer to table.
- * @return Given exit code.
- */
 static int reduce_by_rule(ParserData* data)
 {
     (void) data;

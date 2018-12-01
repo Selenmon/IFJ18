@@ -3,11 +3,11 @@
 
 #include <stdbool.h>
 
-typedef struct 
+typedef struct
 {
-	char *str;
-	unsigned int len;
-	unsigned int size;
+    char *str;
+    unsigned int len;
+    unsigned int size;
 } dynamic_string;
 
 void string_clear (dynamic_string *s);

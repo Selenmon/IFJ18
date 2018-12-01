@@ -1,13 +1,11 @@
-//
-// Created by Selenmon on 20.11.2018.
-//
+
 #ifndef TOKEN_STACK_LIBRARY_H
 #define TOKEN_STACK_LIBRARY_H
 
 #include <stdbool.h>
 
 #include "expression.h"
-#include "BSTsymtable.h"
+#include "bstsymtable.h"
 
 
 typedef struct stack_item

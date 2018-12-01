@@ -40,7 +40,7 @@ typedef enum
     MREQ,                    // >=
     MRTN,                    // >
     LEFT_BRACKET,            // (
-    RIGHT_BRACKET,            // )
+    RIGHT_BRACKET,           // )
     IDENTIFIER,              // ID
     INT,                     // int
     FLOAT,                   // float
@@ -50,4 +50,5 @@ typedef enum
     NON_TERMINAL             // its self explanatory
 } Prec_table_symbol;
 
+int expression(ParserData* data);
 #endif //IFJ18_EXPRESSION_H

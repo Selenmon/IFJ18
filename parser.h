@@ -4,8 +4,10 @@
 #include <stdbool.h>
 
 #include "scanner.h"
-#include "BSTsymtable.h"
+#include "bstsymtable.h"
 
+#define GENERATE_CODE(_callback, ...)								\
+	if (!_callback(__VA_ARGS__)) return ERROR_INTERNAL
 
 typedef struct
 {
@@ -16,14 +18,14 @@ typedef struct
     TData* ls_id;
     TData* rs_id;
 
-    unsigned param_index;
+    unsigned parameter_index;
     int label_index;
     int label_depth;
 
     bool in_function;
-    bool in_declaration;
+    bool in_definition;
     bool in_while_or_if;
-    bool non_declared_function;
+    bool non_defined_function;
 } ParserData;
 
 int analyse();
