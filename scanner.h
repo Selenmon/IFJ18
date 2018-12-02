@@ -18,6 +18,8 @@ typedef enum {
 	KW_THEN,
 	KW_WHILE,
 
+
+
 	//vestavene funkce
 	KW_INPUTS,
 	KW_INPUTI,
@@ -38,7 +40,7 @@ typedef enum {
 	TT_EMPTY,
 
 	TT_INTEGER, //cele cislo
-	TT_DOUBLE, //desetinne 
+	TT_FLOAT, //desetinne 
 	TT_STRING, //retezec
 
 	TT_ERROR, //nepovoleny lexem
@@ -85,6 +87,7 @@ typedef enum {
 	
 	ST_LESS_THAN, // zacina <
 	ST_MORE_THAN, // zacina >
+	ST_NOT_EQUAL, // !
 
 	ST_EOL, // end of line
 
@@ -111,3 +114,4 @@ typedef struct {
 
 
 int getToken(tToken *Token);
+
