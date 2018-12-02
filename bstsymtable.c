@@ -122,7 +122,7 @@ void ReplaceByRightmost (tBSTNodePtr PtrReplaced, tBSTNodePtr *RootPtr){
     }
 }
 
-bool sym_table_add_param(TData *data, int data_type)
+bool BST_symtable_add_param(TData *data, int data_type)
 {
     if (data == NULL)
         return false;

@@ -63,7 +63,7 @@ TData* BST_symtable_Insert (tBSTNodePtr *,const char *K, bool*alloc_failed);
  * @param data_type Data type of parameter
  * @return true if successful false otherwise
  */
-bool sym_table_add_param(TData *data, int data_type);
+bool BST_symtable_add_param(TData *data, int data_type);
 
 /**
  * @brief  Function Deletes symbol node from BStree
