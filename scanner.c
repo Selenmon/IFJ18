@@ -103,7 +103,7 @@ int getDecimal(dynamic_string *string, tToken *Token) {
 	return freeDynamicString(SCANNER_TOKEN_OK, string);
 }
 
-//Function to get appropriate type of token. Main function.
+//Function to get appropriate type of token.
 int getToken(tToken *Token) {
 
 	if ((SourceFile == NULL) | (Dynamic_string == NULL))
