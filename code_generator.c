@@ -19,7 +19,7 @@
     "\n DEFVAR LF@%retval"                                                                          \
     "\n READ LF@%retval string"                                                                     \
     "\n POPFRAME"                                                                                   \
-    "\n RETURN"                                                                                     \
+    "\n RETURN"
 
 #define FUNCTION_INPUT_I                                                                            \
     "\n # Built-in function Inputi"                                                                 \
@@ -28,7 +28,7 @@
     "\n DEFVAR LF@%iint"                                                                            \
     "\n READ LF@%iint int"                                                                          \
     "\n POPFRAME"                                                                                   \
-    "\n RETURN"                                                                                     \
+    "\n RETURN"
 
 
 #define FUNCTION_INPUT_F                                                                            \
@@ -248,19 +248,19 @@ static bool generate_default_var_value(Data_Type type)
     switch (type)
     {
         case TYPE_INT:
-            ADD_CODE("int@0");
+            ADD_CODE("int@nil");
             break;
 
         case TYPE_FLOAT:
-            ADD_CODE("float@0.0");
+            ADD_CODE("float@nil");
             break;
 
         case TYPE_STRING:
-            ADD_CODE("string@");
+            ADD_CODE("string@nil");
             break;
 
         case TYPE_BOOL:
-            ADD_CODE("bool@false");
+            ADD_CODE("bool@lase");
 
         default:
             return false;
@@ -393,7 +393,7 @@ bool generate_function_return(char *function_id)
 }
 
 
-bool generate_var_declare(char *var_id)
+bool generate_var_define(char *var_id)
 {
     ADD_CODE("DEFVAR LF@"); ADD_CODE(var_id); ADD_CODE("\n");
 
@@ -409,39 +409,6 @@ bool generate_var_default_value(char *var_id, Data_Type type)
 
     return true;
 }
-
-
-bool generate_input(char *var_id, Data_Type type)
-{
-    ADD_INST("WRITE GF@%input_prompt");
-    ADD_CODE("READ LF@"); ADD_CODE(var_id); ADD_CODE(" ");
-    switch (type)
-    {
-        case TYPE_INT:
-            ADD_CODE("int");
-            break;
-        case TYPE_FLOAT:
-            ADD_CODE("float");
-            break;
-        case TYPE_STRING:
-            ADD_CODE("string");
-            break;
-        default:
-            return false;
-    }
-    ADD_CODE("\n");
-
-    return true;
-}
-
-
-bool generate_print()
-{
-    ADD_INST("WRITE GF@%exp_result");
-
-    return true;
-}
-
 
 bool generate_push(tToken token)
 {
@@ -582,9 +549,9 @@ bool generate_stack_op2_to_integer()
     return true;
 }
 
-static bool generate_label(char *function_id, int label_index, int label_deep)
+static bool generate_label(char *function_id, int label_index, int label_depth)
 {
-    ADD_CODE("LABEL $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_deep);
+    ADD_CODE("LABEL $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_depth);
     ADD_CODE("%"); ADD_CODE_INT(label_index); ADD_CODE("\n");
 
     return true;
@@ -593,65 +560,65 @@ static bool generate_label(char *function_id, int label_index, int label_deep)
 
 bool generate_if_head()
 {
-    ADD_INST("\n# If Then");
+    ADD_INST("\n# if then");
 
     return true;
 }
 
 
-bool generate_if_start(char *function_id, int label_index, int label_deep)
+bool generate_if_start(char *function_id, int label_index, int label_depth)
 {
-    ADD_CODE("JUMPIFEQ $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_deep);
+    ADD_CODE("JUMPIFEQ $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_depth);
     ADD_CODE("%"); ADD_CODE_INT(label_index); ADD_CODE(" GF@%exp_result bool@false\n");
 
     return true;
 }
 
 
-bool generate_if_else_part(char *function_id, int label_index, int label_deep)
+bool generate_if_else_part(char *function_id, int label_index, int label_depth)
 {
-    ADD_CODE("JUMP $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_deep);
+    ADD_CODE("JUMP $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_depth);
     ADD_CODE("%"); ADD_CODE_INT(label_index + 1); ADD_CODE("\n");
-    ADD_INST("# Else");
-    if (!generate_label(function_id, label_index, label_deep)) return false;
+    ADD_INST("# else");
+    if (!generate_label(function_id, label_index, label_depth)) return false;
 
     return true;
 }
 
 
-bool generate_if_end(char *function_id, int label_index, int label_deep)
+bool generate_if_end(char *function_id, int label_index, int label_depth)
 {
-    ADD_INST("# End If");
-    if (!generate_label(function_id, label_index, label_deep)) return false;
+    ADD_INST("# end");
+    if (!generate_label(function_id, label_index, label_depth)) return false;
 
     return true;
 }
 
 
-bool generate_while_head(char *function_id, int label_index, int label_deep)
+bool generate_while_head(char *function_id, int label_index, int label_depth)
 {
-    ADD_INST("\n# Do While");
-    if (!generate_label(function_id, label_index, label_deep)) return false;
+    ADD_INST("\n# While Do");
+    if (!generate_label(function_id, label_index, label_depth)) return false;
 
     return true;
 }
 
 
-bool generate_while_start(char *function_id, int label_index, int label_deep)
+bool generate_while_start(char *function_id, int label_index, int label_depth)
 {
-    ADD_CODE("JUMPIFEQ $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_deep);
+    ADD_CODE("JUMPIFEQ $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_depth);
     ADD_CODE("%"); ADD_CODE_INT(label_index); ADD_CODE(" GF@%exp_result bool@false"); ADD_CODE("\n");
 
     return true;
 }
 
 
-bool generate_while_end(char *function_id, int label_index, int label_deep)
+bool generate_while_end(char *function_id, int label_index, int label_depth)
 {
-    ADD_CODE("JUMP $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_deep);
+    ADD_CODE("JUMP $"); ADD_CODE(function_id); ADD_CODE("%"); ADD_CODE_INT(label_depth);
     ADD_CODE("%"); ADD_CODE_INT(label_index - 1); ADD_CODE("\n");
     ADD_INST("# Loop");
-    if (!generate_label(function_id, label_index, label_deep)) return false;
+    if (!generate_label(function_id, label_index, label_depth)) return false;
 
     return true;
 }

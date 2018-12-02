@@ -5,7 +5,7 @@
 #include "bstsymtable.h"
 #include "error.h"
 #include "code_generator.h"
-#include "code_generator.c"
+#include "parser.h"
 
 
 #define TABLE_SIZE 8
@@ -214,27 +214,21 @@ static Prec_rules test_rule(int num, Token_stack_item* op1, Token_stack_item* op
                     case EQ:
                         return E_EQ_E;
 
-                        // rule E -> E <> E
                     case NEQ:
                         return E_NEQ_E;
 
-                        // rule E -> E <= E
                     case LSEQ:
                         return E_LSEQ_E;
 
-                        // rule E -> E < E
                     case LSTN:
                         return E_LSTN_E;
 
-                        // rule E -> E >= E
                     case MREQ:
                         return E_MREQ_E;
 
-                        // rule E -> E > E
                     case MRTN:
                         return E_MRTN_E;
 
-                        // invalid operator
                     default:
                         return NOT_RULE;
                 }
@@ -541,4 +535,3 @@ int expression(ParserData* data)
 
     FREE_RESOURCES_RETURN(SYNTAX_OK);
 }
-#include "expression.h"

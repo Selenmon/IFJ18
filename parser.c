@@ -3,7 +3,6 @@
 #include "bstsymtable.h"
 #include "parser.h"
 #include "code_generator.h"
-#include "code_generator.c"
 
 static int program(ParserData* data);
 static int parameters(ParserData* data);
