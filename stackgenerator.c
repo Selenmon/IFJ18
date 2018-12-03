@@ -13,7 +13,7 @@ void token_stack_init(Token_stack* stack)
     stack->top =  NULL;
 }
 
-bool token_stack_push(Token_stack* stack, Potential_symbol symbol, Data_Type type)
+bool token_stack_push(Token_stack* stack, Prec_table_symbol symbol, Data_Type type)
 {
     Token_stack_item* new_item = (Token_stack_item*)malloc(sizeof(Token_stack_item));
 
@@ -61,7 +61,7 @@ Token_stack_item* token_stack_top_terminal(Token_stack* stack)
     }
 }
 
-bool token_stack_insert_after_top_terminal(Token_stack* stack, Potential_symbol symbol, Data_Type type)
+bool token_stack_insert_after_top_terminal(Token_stack* stack, Prec_table_symbol symbol, Data_Type type)
 {
     Token_stack_item* previous = NULL;
 
