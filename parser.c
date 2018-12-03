@@ -31,10 +31,7 @@ if (data->token.Type != (_type)) return SYNTAX_ERR
 if ((result = rule(data))) return result
 
 #define CHECK_KEYWORD(_keyword)                             \
-if (                                            \
-data->token.Type != TT_KEYWORD                  \
-|| data->token.Data.Keyword != (_keyword)          \
-) return SYNTAX_ERR
+if (data->token.Type != TT_KEYWORD || data->token.Data.Keyword != (_keyword)) return SYNTAX_ERR
 
 #define GET_TOKEN_AND_CHECK_TYPE(_type)                 \
 do {                                            \
@@ -140,6 +137,17 @@ static int parameters_no(ParserData* data)
         data->parameter_index++;
 
         CHECK_RULE(var);
+        if (!data->in_definition)
+		{
+			bool internal_error;
+			if (!(data->rs_id = sym_table_add_symbol(&data->local_table, data->token.attribute.string->str, &internal_error)))
+			{
+				if (internal_error) return ERROR_INTERNAL;
+				else return SEM_ERR_UNDEFINED_VAR;
+			}
+
+			GENERATE_CODE(generate_function_param_declare, data->rhs_id->identifier, data->param_index);
+		}
         CHECK_RULE(parameters_no);
         GET_TOKEN();
         return parameters_no(data);
@@ -153,11 +161,15 @@ static int var(ParserData* data)
     // VAR -> INT
     if (data->token.Type == TT_INTEGER)
     {
+    	GENERATE_CODE(generate_function_convert_passed_param, TYPE_DOUBLE, TYPE_INT, data->param_index);
+
         return var(data);
     }
         // VAR -> FLOAT
     else if (data->token.Type == TT_FLOAT)
     {
+    	GENERATE_CODE(generate_function_convert_passed_param, TYPE_INT, TYPE_DOUBLE, data->param_index);
+
         return var(data);
     }
         // VAR -> STRING
@@ -176,6 +188,7 @@ static int var(ParserData* data)
     {
         return SYNTAX_ERR;
     }
+    RETURN SYNTAX_OK;
 }
 
 static int command(ParserData* data)
@@ -254,29 +267,39 @@ static int command(ParserData* data)
     // COMMAND -> ID = EXPR EOL /  ID = FUNCTION EOL
     else if(data->token.Type == TT_IDENTIFIER)
     {
+    	data->rhs_id = BST_symtable_Search(&data->global_table, data->token.attribute.string->str);
         GET_TOKEN_AND_CHECK_TYPE(TT_ASSIGN);
 
         if (data->token.type == TOKEN_TYPE_KEYWORD)
         {
             GET_TOKEN_AND_CHECK_RULE(bif);
         }
-        else if(search positive)
+        else if(BST_symtable_Search(&data->global_table, "%exp_result") == data->token.attribute.string->str)
         {
-            
+        	GENERATE_CODE(generate_function_before_pass_params);
+        	GET_TOKEN_AND_CHECK_TYPE(TT_LEFT_BRACKET);
+            CHECK_RULE(parameters);
+            GET_TOKEN_AND_CHECK_TYPE(TT_RIGHT_BRACKET);
+            GENERATE_CODE(generate_function_call, data->rs_id->identifier);
+            GENERATE_CODE(generate_function_retval_assign, data->ls_id->identifier, data->ls_id->type, data->rs_id->type);
+            GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
         }
-        else if(search is negative)
+        else if(BST_symtable_Search(&data->global_table, "%exp_result") != data->token.attribute.string->str)
         {
+        	data->ls_id = sym_table_search(&data->local_table, data->token.attribute.string->str);
+			if (!data->ls_id) return SEMANTIC_ERR_UNDEFINED_VAR;
             GET_TOKEN_AND_CHECK_RULE(expr);
+            GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
         }
 
         GET_TOKEN();
-        return statement(data);
+        return command(data);
     }
         // COMMAND -> ε
-    else if (data->token.type == TOKEN_TYPE_EOL)
+    else if (data->token.Type == TT_EOL)
     {
         GET_TOKEN();
-        return statement(data);
+        return command(data);
     }
 }
 
@@ -298,14 +321,17 @@ static int bif(ParserData* data)
         case KW_NIL:
             data->rs_id = BST_symtable_Search(&data->global_table, "nil");
             break;
+
             // BIF -> ORD ( PARAMETERS )
         case KW_ORD:
             data->rs_id = BST_symtable_Search(&data->global_table, "ord");
             break;
+
             // BIF -> CHR ( PARAMETERS )
         case KW_CHR:
             data->rs_id = BST_symtable_Search(&data->global_table, "chr");
             break;
+
         default:
             return SYNTAX_ERR;
     }
