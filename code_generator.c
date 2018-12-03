@@ -260,7 +260,7 @@ static bool generate_default_var_value(Data_Type type)
             break;
 
         case TYPE_BOOL:
-            ADD_CODE("bool@lase");
+            ADD_CODE("bool@nil");
 
         default:
             return false;

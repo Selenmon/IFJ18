@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include "expression.h"
-#include "bstsymtable.h"
+#include "symtable.h"
 
 
 typedef struct stack_item

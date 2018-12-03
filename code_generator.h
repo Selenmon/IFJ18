@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "bstsymtable.h"
+#include "symtable.h"
 #include "scanner.h"
 #include "expression.h"
 #include "code_generator.h"

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "scanner.h"
-#include "bstsymtable.h"
+#include "symtable.h"
 
 #define GENERATE_CODE(_callback, ...)								\
 	if (!_callback(__VA_ARGS__)) return ERROR_INTERNAL

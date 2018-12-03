@@ -2,7 +2,7 @@
 #include "scanner.h"
 #include "expression.h"
 #include "stackgenerator.h"
-#include "bstsymtable.h"
+#include "symtable.h"
 #include "error.h"
 #include "code_generator.h"
 #include "parser.h"
@@ -458,14 +458,14 @@ int expression(ParserData* data)
                     GENERATE_CODE(generate_push, data->token);
                 }
 
-                if ((result = get_next_token(&data->token)))
+                if ((result = getToken(&data->token)))
                     FREE_RESOURCES_RETURN(result);
                 break;
 
             case E:
                 token_stack_push(&stack, actual_symbol, get_data_type(&data->token, data));
 
-                if ((result = get_next_token(&data->token)))
+                if ((result = getToken(&data->token)))
                     FREE_RESOURCES_RETURN(result);
                 break;
 

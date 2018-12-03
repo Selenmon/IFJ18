@@ -1,8 +1,9 @@
 #include "dynamic_string.h"
 #include "error.h"
-#include "bstsymtable.h"
+#include "symtable.h"
 #include "parser.h"
 #include "code_generator.h"
+#include "expression.h"
 
 static int program(ParserData* data);
 static int parameters(ParserData* data);
@@ -20,7 +21,7 @@ static int print(ParserData* data);
 || (token).Type == TOKEN_TYPE_IDENTIFIER
 
 #define GET_TOKEN ()                                        \
-if ((result = get_next_token(&data->token)) != SCANNER_TOKEN_OK)    \
+if ((result = getToken(&data->token)) != SCANNER_TOKEN_OK)    \
 return result
 
 #define CHECK_TYPE(_type)                                       \
@@ -295,130 +296,130 @@ static int bif(ParserData* data)
 
 static int print(ParserData* data)
 {
-	int result;
+    int result;
 
-	// print -> ε
-	if (data->token.type == TOKEN_TYPE_EOL)
-	{
-		return SYNTAX_OK;
-	}
+    // print -> ε
+    if (data->token.Type == TT_EOL)
+    {
+        return SYNTAX_OK;
+    }
 
-	data->lhs_id = BST_symtable_Search(&data->global_table, "%exp_result");
-	if (!data->lhs_id) return SEM_ERR_UNDEFINED_VAR;
-	data->lhs_id->type = TYPE_UNDEFINED;
+    data->ls_id = BST_symtable_Search(&data->global_table, "%exp_result");
+    if (!data->ls_id) return SEMANTIC_ERR_UNDEFINED_VAR;
+    data->ls_id->type = TYPE_NIL;
 
-	// <print> -> print ( parameters )
-	CHECK_KEYWORD(print);
-	CHECK_TYPE(TT_ASSIGN);
-	CHECK_RULE(parameters);
-	GENERATE_CODE(generate_print);
-	return SYNTAX_OK;
+    // <print> -> print ( parameters )
+    CHECK_KEYWORD(print);
+    CHECK_TYPE(TT_ASSIGN);
+    CHECK_RULE(parameters);
+    GENERATE_CODE(generate_print);
+    return SYNTAX_OK;
 
 }
 
-static bool init_variables(PData* data)
+static bool init_variables(ParserData* data)
 {
-	BST_symtable_init(&data->global_table);
-	BST_symtable_init(&data->local_table);
+    BST_symtable_init(&data->global_table);
+    BST_symtable_init(&data->local_table);
 
-	data->current_id = NULL;
-	data->lhs_id = NULL;
-	data->rhs_id = NULL;
+    data->current_id = NULL;
+    data->ls_id = NULL;
+    data->rs_id = NULL;
 
-	data->parameter_index = 0;
-	data->label_index = 0;
-	data->label_depth = -1;
+    data->parameter_index = 0;
+    data->label_index = 0;
+    data->label_depth = -1;
 
-	data->in_function = false;
-	data->in_definition = false;
-	data->in_while_or_if = false;
-	data->non_declared_function = false;
+    data->in_function = false;
+    data->in_definition = false;
+    data->in_while_or_if = false;
+    data->non_defined_function = false;
 
-	// init default functions
+    // init default functions
 
-	bool internal_error;
-	TData* id;
+    bool internal_error;
+    TData* id;
 
-	// Length(s As String) As Integer
-	id = BST_symtable_Insert(&data->global_table, "length", &internal_error);
-	if (internal_error) return false;
+    // Length(s As String) As Integer
+    id = BST_symtable_Insert(&data->global_table, "length", &internal_error);
+    if (internal_error) return false;
 
-	id->defined = true;
-	id->type = TYPE_INT;
-	if (!sym_table_add_param(id, TYPE_STRING)) return false;
+    id->defined = true;
+    id->type = TYPE_INT;
+    if (!BST_symtable_add_param(id, TYPE_STRING)) return false;
 
-	// SubStr(s As String, i As Integer, n As Integer) As String
-	id = BST_symtable_Insert(&data->global_table, "substr", &internal_error);
-	if (internal_error) return false;
+    // SubStr(s As String, i As Integer, n As Integer) As String
+    id = BST_symtable_Insert(&data->global_table, "substr", &internal_error);
+    if (internal_error) return false;
 
-	id->defined = true;
-	id->type = TYPE_STRING;
-	if (!sym_table_add_param(id, TYPE_STRING)) return false;
-	if (!sym_table_add_param(id, TYPE_INT)) return false;
-	if (!sym_table_add_param(id, TYPE_INT)) return false;
+    id->defined = true;
+    id->type = TYPE_STRING;
+    if (!BST_symtable_add_param(id, TYPE_STRING)) return false;
+    if (!BST_symtable_add_param(id, TYPE_INT)) return false;
+    if (!BST_symtable_add_param(id, TYPE_INT)) return false;
 
-	// ord(s As String, i As Integer) As Integer
-	id = BST_symtable_Insert(&data->global_table, "nil", &internal_error);
-	if (internal_error) return false;
+    // ord(s As String, i As Integer) As Integer
+    id = BST_symtable_Insert(&data->global_table, "nil", &internal_error);
+    if (internal_error) return false;
 
-	id->defined = true;
-	id->type = TYPE_INT;
-	if (!sym_table_add_param(id, TYPE_STRING)) return false;
-	if (!sym_table_add_param(id, TYPE_INT)) return false;
+    id->defined = true;
+    id->type = TYPE_INT;
+    if (!BST_symtable_add_param(id, TYPE_STRING)) return false;
+    if (!BST_symtable_add_param(id, TYPE_INT)) return false;
 
-	// Chr(i As Integer) As String
-	id = BST_symtable_Insert(&data->global_table, "chr", &internal_error);
-	if (internal_error) return false;
+    // Chr(i As Integer) As String
+    id = BST_symtable_Insert(&data->global_table, "chr", &internal_error);
+    if (internal_error) return false;
 
-	id->defined = true;
-	id->type = TYPE_STRING;
-	if (!sym_table_add_param(id, TYPE_INT)) return false;
+    id->defined = true;
+    id->type = TYPE_STRING;
+    if (!BST_symtable_add_param(id, TYPE_INT)) return false;
 
-	// Global variable %exp_result for storing result of expression.
-	id = BST_symtable_Insert(&data->global_table, "%exp_result", &internal_error);
-	if (internal_error) return false;
-	id->defined = true;
-	id->type = TYPE_UNDEFINED;
-	id->global = true;
+    // Global variable %exp_result for storing result of expression.
+    id = BST_symtable_Insert(&data->global_table, "%exp_result", &internal_error);
+    if (internal_error) return false;
+    id->defined = true;
+    id->type = TYPE_NIL;
+    id->globalvar = true;
 
-	return true;
+    return true;
 }
 
 static void free_variables(ParserData* data)
 {
-	sym_table_free(&data->global_table);
-	sym_table_free(&data->local_table);
+    BST_symtable_Free(&data->global_table);
+    BST_symtable_Free(&data->local_table);
 }
 
 int analyse()
 {
-	int result;
+    int result;
 
-	Dynamic_string string;
-	if (!dynamic_string_init(&string)) return ERROR_INTERNAL;
-	set_dynamic_string(&string);
+    dynamic_string string;
+    if (!string_init(&string)) return ERROR_INTERNAL;
+    set_dynamic_string(&string);
 
-	PData parser_data;
-	if (!init_variables(&parser_data))
-	{
-		dynamic_string_free(&string);
-		return ERROR_INTERNAL;
-	}
+    ParserData parser_data;
+    if (!init_variables(&parser_data))
+    {
+        string_free(&string);
+        return ERROR_INTERNAL;
+    }
 
-	if ((result = get_next_token(&parser_data.token)) == SCANNER_TOKEN_OK)
-	{
-		if (!code_generator_start())
-		{
-			dynamic_string_free(&string);
-			free_variables(&parser_data);
-			return ERROR_INTERNAL;
-		}
+    if ((result = getToken(&parser_data.token)) == SCANNER_TOKEN_OK)
+    {
+        if (!code_generator_start())
+        {
+            string_free(&string);
+            free_variables(&parser_data);
+            return ERROR_INTERNAL;
+        }
 
-		result = prog(&parser_data);
-	}
+        result = program(&parser_data);
+    }
 
-	dynamic_string_free(&string);
-	free_variables(&parser_data);
+    string_free(&string);
+    free_variables(&parser_data);
 
-	return result;
+    return result;
 }
