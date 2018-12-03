@@ -194,7 +194,7 @@ static int command(ParserData* data)
 {
     int result;
 
-    // COMMAND -> IF EXPR THEN EOL COMMAND END
+    // COMMAND -> IF EXPR THEN EOL COMMAND ELSE EOL COMMAND END EOL COMMAND
     if(data->token.Type == TT_KEYWORD && data->token.Data.Keyword == KW_IF)
     {
         data->label_depth++;
@@ -214,13 +214,23 @@ static int command(ParserData* data)
 
         CHECK_KEYWORD(KW_THEN);
 
-        GENERATE_CODE(generate_if_start, function_id, current_label_index, data->label_depth);
-
         GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
+
+        GENERATE_CODE(generate_if_start, function_id, current_label_index, data->label_depth);
 
         GET_TOKEN_AND_CHECK_RULE(command);
 
-        CHECK_KEYWORD(KW_END);
+        CHECK_KEYWORD(KW_ELSE);
+
+        GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
+
+        GENERATE_CODE(generate_if_else_part, function_id, current_label_index, data->label_deep);
+
+        GET_TOKEN_AND_CHECK_RULE(command);
+
+        CHECK_KEYWORD(KEYWORD_END);
+
+        GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
 
         GENERATE_CODE(generate_if_end, function_id, current_label_index + 1, data->label_depth);
 
