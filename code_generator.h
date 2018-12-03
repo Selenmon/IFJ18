@@ -1,4 +1,3 @@
-
 #ifndef IFJ18_CODE_GENERATOR_H
 #define IFJ18_CODE_GENERATOR_H
 
@@ -8,7 +7,6 @@
 #include "symtable.h"
 #include "scanner.h"
 #include "expression.h"
-#include "code_generator.h"
 
 
 /**
@@ -66,7 +64,7 @@ bool generate_function_end(char *function_id);
  * @param type Data type of function return value
  * @return True if successful, false otherwise
  */
-bool generate_function_retval(Data_type type);
+bool generate_function_retval(Data_Type type);
 
 /**
  * @brief Function generates code for function call (jump to the function)
@@ -84,7 +82,7 @@ bool generate_function_call(char *function_id);
  * @param ret_type Data type of function return value
  * @return True if successful, false otherwise
  */
-bool generate_function_retval_assign(char *l_val_id, Data_type l_type, Data_type ret_type);
+bool generate_function_retval_assign(char *l_val_id, Data_Type l_type, Data_Type ret_type);
 
 /**
  * @brief Function generates code for local variable for function parameter.
@@ -109,7 +107,7 @@ bool generate_function_before_pass_params();
  * @param index Parameter index (position)
  * @return True if successful, false otherwise
  */
-bool generate_function_pass_param(Token token, int index);
+bool generate_function_pass_param(tToken token, int index);
 
 /**
  * @brief Function generates code for conversion of passed parameter data type
@@ -119,7 +117,7 @@ bool generate_function_pass_param(Token token, int index);
  * @param index Parameter index (position)
  * @return True if successful, false otherwise
  */
-bool generate_function_convert_passed_param(Data_type from, Data_type to, int index);
+bool generate_function_convert_passed_param(Data_Type from, Data_Type to, int index);
 
 /**
  * @brief Function generates code for return statement in function
@@ -144,7 +142,7 @@ bool generate_var_define(char *var_id);
  * @param type Data type of variable
  * @return True if successful, false otherwise
  */
-bool generate_var_default_value(char *var_id, Data_type type);
+bool generate_var_default_value(char *var_id, Data_Type type);
 
 /**
  * @brief Function code for generates input statement
@@ -153,7 +151,7 @@ bool generate_var_default_value(char *var_id, Data_type type);
  * @param type Data type of read value
  * @return True if successful, false otherwise
  */
-bool generate_input(char *var_id, Data_type type);
+bool generate_input(char *var_id, Data_Type type);
 
 /**
  * @brief Function generates code for print of expression result
@@ -168,7 +166,7 @@ bool generate_print();
  * @param token Token with value to be pushed
  * @return True if successful, false otherwise
  */
-bool generate_push(Token token);
+bool generate_push(tToken token);
 
 /**
  * @brief Function generates code for operation with top data-stack items
@@ -176,7 +174,7 @@ bool generate_push(Token token);
  * @param rule Expression rule
  * @return True if successful, false otherwise
  */
-bool generate_stack_operation(Prec_rules_enum rule);
+bool generate_stack_operation(Prec_rules rule);
 
 /**
  * @brief Function generates code for concatenation of top data-stack items
@@ -194,7 +192,7 @@ bool generate_concat_stack_strings();
  * @param frame Variable frame of given variable
  * @return True if successful, false otherwise
  */
-bool generate_save_expression_result(char *var_id, Data_type ret_type, Data_type l_type, char *frame);
+bool generate_save_expression_result(char *var_id, Data_Type ret_type, Data_Type l_type, char *frame);
 
 /**
  * @brief Function generates code for conversion of data-stack top-item to double
