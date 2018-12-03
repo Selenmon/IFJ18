@@ -1,3 +1,6 @@
+#ifndef _SCANNER_H
+#define _SCANNER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,7 +10,7 @@ FILE *SourceFile;
 
 typedef enum {
 
-	//klicova slova
+	//Keywords.
 	KW_DEF,
 	KW_DO,
 	KW_ELSE,
@@ -18,9 +21,7 @@ typedef enum {
 	KW_THEN,
 	KW_WHILE,
 
-
-
-	//vestavene funkce
+	//Built-in functions.
 	KW_INPUTS,
 	KW_INPUTI,
 	KW_INPUTF,
@@ -36,20 +37,21 @@ typedef enum {
 typedef enum {
 	TT_KEYWORD,
 	TT_IDENTIFIER,
-	TT_EOL, // konec radku
+	TT_EOL, 
+	TT_EOF,
 	TT_EMPTY,
 
-	TT_INTEGER, //cele cislo
-	TT_FLOAT, //desetinne 
-	TT_STRING, //retezec
 
-	TT_ERROR, //nepovoleny lexem
+	TT_INTEGER, 
+	TT_FLOAT, 
+	TT_STRING, 
 
-	//operatory
-	TT_PLUS, // +
-	TT_MINUS, // -
-	TT_MUL, // *
-	TT_DIV, // /
+	TT_ERROR,
+
+	TT_PLUS, 
+	TT_MINUS, 
+	TT_MUL, 
+	TT_DIV, 
 
 	TT_ASSIGN, // =
 	TT_LESS_THAN, // <
@@ -59,42 +61,42 @@ typedef enum {
 	TT_IS_EQUAL, // ==
 	TT_NOT_EQUAL, // !=
 
-	//oddelovace
-	TT_DOT, // . ocekavam desetinne cislo
-	TT_COMMA, // , ocekavam argumenty
-	TT_LEFT_BRACKET, // (
-	TT_RIGHT_BRACKET, // )
+
+	TT_COMMA, 
+	TT_LEFT_BRACKET, 
+	TT_RIGHT_BRACKET, 
 
 } tTokenType;
 
 typedef enum {
-	ST_START, // start
-	ST_LINE_COMMENTARY, // # , =begin mezera/tabulator =end
-	ST_ASSIGN, // =
-	ST_BLOCK_COMMENTARY_START, // =begin
-	ST_BLOCK_COMMENTARY, // =end
-
-	ST_IDENTIFIER, //zacina malym pismenem nebo _, obsahuje mala velka pismena, muze koncit !?
-	ST_KEYWORD,
-
-	ST_NUMBER, //cislice, nesmi zacinat 0
-	ST_NUMBER_DECIMAL, // . cislice bude desetinna
-	ST_NUMBER_EXPONENT, //  e nebo E cislice ma exponent, muze mit i + a -
-
-	ST_STRING_START, // "
-	ST_STRING, // dalsi ", znaky s hodnotou ASCII > 31 rovnou, 
-	ST_STRING_ESCAPE, // escape sekvence \", \n, \s, \t, \xhh
 	
-	ST_LESS_THAN, // zacina <
-	ST_MORE_THAN, // zacina >
-	ST_NOT_EQUAL, // !
+	ST_START, 
+	ST_LINE_COMMENTARY, 
+	ST_ASSIGN, 
+	ST_BLOCK_COMMENTARY,
+	
+	ST_ID_KEYWORD,
+	
+	ST_NUMBER, 
+	ST_NUMBER_DECIMAL,
+	ST_NUMBER_POINT,
+	ST_NUMBER_EXPONENT,
+	ST_NUMBER_EXPONENT_SIGN,
+	ST_NUMBER_EXPONENT_END,
 
-	ST_EOL, // end of line
+	ST_STRING_HEXA, 
+	ST_STRING,  
+	ST_STRING_ESCAPE, 
+	
+	ST_LESS_THAN, 
+	ST_MORE_THAN, 
+	ST_NOT_EQUAL, 
 
-	//TODO?
+	ST_EOL, 
+
 } tState;
 
-//co to bude za token
+//Data of token.
 typedef union {
 
 	dynamic_string *string;
@@ -104,7 +106,7 @@ typedef union {
 
 } tTokenData;
 
-//struktura tokenu pro parser
+//Structure of token.
 typedef struct {
 	
 	tTokenType Type;
@@ -112,6 +114,9 @@ typedef struct {
 
 } tToken;
 
-
+int freeDynamicString(int errorcode, dynamic_string *string);
+int getIdentifier(dynamic_string *string, tToken *Token);
+int getInteger(dynamic_string *string, tToken *Token);
+int getDecimal(dynamic_string *string, tToken *Token);
 int getToken(tToken *Token);
-
+#endif //_SCANNER_H
