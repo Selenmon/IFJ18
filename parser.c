@@ -153,17 +153,28 @@ static int var(ParserData* data)
     // VAR -> INT
     if (data->token.Type == TT_INTEGER)
     {
-        //check somethingorother
+        return var(data);
     }
         // VAR -> FLOAT
     else if (data->token.Type == TT_FLOAT)
     {
-        //check somethingorother
+        return var(data);
     }
         // VAR -> STRING
     else if (data->token.Type == TT_STRING)
     {
-        //check somethingorother
+        return var(data);
+    }
+    else if (data->token.Type == TT_KEYWORD)
+    {
+        if(!CHECK_KEYWORD(KW_NIL))
+        {
+            return var(data);
+        }
+    }
+    else
+    {
+        return SYNTAX_ERR;
     }
 }
 
@@ -193,9 +204,9 @@ static int command(ParserData* data)
 
         GENERATE_CODE(generate_if_start, function_id, current_label_index, data->label_depth);
 
-        GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
+        GET_TOKEN_AND_CHECK_TYPE(TT_EOL)
 
-        GET_TOKEN_AND_CHECK_RULE(command);
+        GET_TOKEN_AND_CHECK_RULE(command)
 
         CHECK_KEYWORD(KW_END);
 
@@ -241,15 +252,19 @@ static int command(ParserData* data)
         return command(data);
     }
     // COMMAND -> ID = EXPR EOL /  ID = FUNCTION EOL
-    if(data->token.Type == TT_IDENTIFIER)
+    else if(data->token.Type == TT_IDENTIFIER)
     {
         GET_TOKEN_AND_CHECK_TYPE(TT_ASSIGN);
 
-        if(EXPR IS A FUNCTION TODO)
+        if (data->token.type == TOKEN_TYPE_KEYWORD)
         {
-            GET_TOKEN_AND_CHECK_RULE(function);
+            GET_TOKEN_AND_CHECK_RULE(bif);
         }
-        else if(EXPR IS NOT A FUNCTION TODO)
+        else if(search positive)
+        {
+            
+        }
+        else if(search is negative)
         {
             GET_TOKEN_AND_CHECK_RULE(expr);
         }
@@ -291,6 +306,8 @@ static int bif(ParserData* data)
         case KW_CHR:
             data->rs_id = BST_symtable_Search(&data->global_table, "chr");
             break;
+        default:
+            return SYNTAX_ERR;
     }
 }
 
@@ -309,7 +326,7 @@ static int print(ParserData* data)
     data->ls_id->type = TYPE_NIL;
 
     // <print> -> print ( parameters )
-    CHECK_KEYWORD(print);
+    CHECK_KEYWORD(KW_PRINT);
     CHECK_TYPE(TT_ASSIGN);
     CHECK_RULE(parameters);
     GENERATE_CODE(generate_print);
