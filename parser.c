@@ -19,8 +19,7 @@ static int print(ParserData* data);
 || (token).Type == TOKEN_TYPE_INT_NUMBER        \
 || (token).Type == TOKEN_TYPE_STRING            \
 || (token).Type == TOKEN_TYPE_IDENTIFIER
-
-#define GET_TOKEN ()                                        \
+#define GET_TOKEN                                       \
 if ((result = getToken(&data->token)) != SCANNER_TOKEN_OK)    \
 return result
 
@@ -34,13 +33,13 @@ if ((result = rule(data))) return result
 if (data->token.Type != TT_KEYWORD || data->token.Data.Keyword != (_keyword)) return SYNTAX_ERR
 
 #define GET_TOKEN_AND_CHECK_TYPE(_type)                 \
-do {                                            \
+do {                                                    \
 GET_TOKEN();                                            \
 CHECK_TYPE(_type);                                      \
 } while(0)
 
 #define GET_TOKEN_AND_CHECK_RULE(rule)                  \
-do {                                            \
+do {                                                    \
 GET_TOKEN();                                            \
 CHECK_RULE(rule);                                       \
 } while(0)
@@ -80,12 +79,12 @@ static int program(ParserData* data)
         BST_symtable_Free(&data->local_table);
 
         // NEXT
-        GET_TOKEN();
+        GET_TOKEN;
         return program(data);
     }
     else if (data->token.Type == TT_EOL)
     {
-        GET_TOKEN();
+        GET_TOKEN;
         return program(data);
     }
 
@@ -99,7 +98,7 @@ static int end(ParserData* data)
     // PROGRAM -> EOL <end>
     if (data->token.Type == TT_EOL)
     {
-        GET_TOKEN();
+        GET_TOKEN;
         return end(data);
     }
 
@@ -138,16 +137,16 @@ static int parameters_no(ParserData* data)
 
         CHECK_RULE(var);
         if (!data->in_definition)
-		{
-			bool internal_error;
-			if (!(data->rs_id = sym_table_add_symbol(&data->local_table, data->token.attribute.string->str, &internal_error)))
-			{
-				if (internal_error) return ERROR_INTERNAL;
-				else return SEM_ERR_UNDEFINED_VAR;
-			}
+        {
+            bool internal_error;
+            if (!(data->rs_id = BST_symtable_Insert(&data->local_table, data->token.Type.string->str, &internal_error)))
+            {
+                if (internal_error) return ERROR_INTERNAL;
+                else return SEMANTIC_ERR_UNDEFINED_VAR;
+            }
 
-			GENERATE_CODE(generate_function_param_declare, data->rhs_id->identifier, data->param_index);
-		}
+            GENERATE_CODE(generate_function_param_declare, data->rs_id->identifier, data->parameter_index);
+        }
         CHECK_RULE(parameters_no);
         GET_TOKEN();
         return parameters_no(data);
@@ -161,14 +160,14 @@ static int var(ParserData* data)
     // VAR -> INT
     if (data->token.Type == TT_INTEGER)
     {
-    	GENERATE_CODE(generate_function_convert_passed_param, TYPE_DOUBLE, TYPE_INT, data->param_index);
+        GENERATE_CODE(generate_function_convert_passed_param, TYPE_DOUBLE, TYPE_INT, data->parameter_index);
 
         return var(data);
     }
         // VAR -> FLOAT
     else if (data->token.Type == TT_FLOAT)
     {
-    	GENERATE_CODE(generate_function_convert_passed_param, TYPE_INT, TYPE_DOUBLE, data->param_index);
+        GENERATE_CODE(generate_function_convert_passed_param, TYPE_INT, TYPE_FLOAT, data->parameter_index);
 
         return var(data);
     }
@@ -188,7 +187,7 @@ static int var(ParserData* data)
     {
         return SYNTAX_ERR;
     }
-    RETURN SYNTAX_OK;
+    return SYNTAX_OK;
 }
 
 static int command(ParserData* data)
@@ -217,9 +216,9 @@ static int command(ParserData* data)
 
         GENERATE_CODE(generate_if_start, function_id, current_label_index, data->label_depth);
 
-        GET_TOKEN_AND_CHECK_TYPE(TT_EOL)
+        GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
 
-        GET_TOKEN_AND_CHECK_RULE(command)
+        GET_TOKEN_AND_CHECK_RULE(command);
 
         CHECK_KEYWORD(KW_END);
 
@@ -264,31 +263,31 @@ static int command(ParserData* data)
         GET_TOKEN();
         return command(data);
     }
-    // COMMAND -> ID = EXPR EOL /  ID = FUNCTION EOL
+        // COMMAND -> ID = EXPR EOL /  ID = FUNCTION EOL
     else if(data->token.Type == TT_IDENTIFIER)
     {
-    	data->rhs_id = BST_symtable_Search(&data->global_table, data->token.attribute.string->str);
+        data->rs_id = BST_symtable_Search(&data->global_table, data->token.Data.string->str);
         GET_TOKEN_AND_CHECK_TYPE(TT_ASSIGN);
 
-        if (data->token.type == TOKEN_TYPE_KEYWORD)
+        if (data->token.Type == TT_KEYWORD)
         {
             GET_TOKEN_AND_CHECK_RULE(bif);
         }
-        else if(BST_symtable_Search(&data->global_table, "%exp_result") == data->token.attribute.string->str)
+        else if(BST_symtable_Search(&data->global_table, "%exp_result")->identifier == data->token.Data.string->str)
         {
-        	GENERATE_CODE(generate_function_before_pass_params);
-        	GET_TOKEN_AND_CHECK_TYPE(TT_LEFT_BRACKET);
+            GENERATE_CODE(generate_function_before_pass_params);
+            GET_TOKEN_AND_CHECK_TYPE(TT_LEFT_BRACKET);
             CHECK_RULE(parameters);
             GET_TOKEN_AND_CHECK_TYPE(TT_RIGHT_BRACKET);
             GENERATE_CODE(generate_function_call, data->rs_id->identifier);
             GENERATE_CODE(generate_function_retval_assign, data->ls_id->identifier, data->ls_id->type, data->rs_id->type);
             GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
         }
-        else if(BST_symtable_Search(&data->global_table, "%exp_result") != data->token.attribute.string->str)
+        else if(BST_symtable_Search(&data->global_table, "%exp_result")->identifier != data->token.Data.string->str)
         {
-        	data->ls_id = sym_table_search(&data->local_table, data->token.attribute.string->str);
-			if (!data->ls_id) return SEMANTIC_ERR_UNDEFINED_VAR;
-            GET_TOKEN_AND_CHECK_RULE(expr);
+            data->ls_id = BST_symtable_Search(&data->local_table, data->token.Data.string->str);
+            if (!data->ls_id) return SEMANTIC_ERR_UNDEFINED_VAR;
+            GET_TOKEN_AND_CHECK_RULE(expression);
             GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
         }
 
