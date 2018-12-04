@@ -13,12 +13,13 @@ static int command(ParserData* data);
 static int bif(ParserData* data);
 static int end(ParserData* data);
 static int print(ParserData* data);
-
+/*
 #define IS_VALUE(token)                         \
-(token).Type == TOKEN_TYPE_FLOAT_NUMBER         \
-|| (token).Type == TOKEN_TYPE_INT_NUMBER        \
-|| (token).Type == TOKEN_TYPE_STRING            \
-|| (token).Type == TOKEN_TYPE_IDENTIFIER
+(token).Type == TT_FLOAT        \
+|| (token).Type == TT_INTEGER        \
+|| (token).Type == TT_STRING            \
+|| (token).Type == TT_IDENTIFIER
+*/
 #define GET_TOKEN                                       \
 if ((result = getToken(&data->token)) != SCANNER_TOKEN_OK)    \
 return result
@@ -34,19 +35,19 @@ if (data->token.Type != TT_KEYWORD || data->token.Data.Keyword != (_keyword)) re
 
 #define GET_TOKEN_AND_CHECK_TYPE(_type)                 \
 do {                                                    \
-GET_TOKEN();                                            \
+GET_TOKEN;                                            \
 CHECK_TYPE(_type);                                      \
 } while(0)
 
 #define GET_TOKEN_AND_CHECK_RULE(rule)                  \
 do {                                                    \
-GET_TOKEN();                                            \
+GET_TOKEN;                                            \
 CHECK_RULE(rule);                                       \
 } while(0)
 
 #define GET_TOKEN_AND_CHECK_KEYWORD(_keyword)       \
 do {                                            \
-GET_TOKEN();                                        \
+GET_TOKEN;                                        \
 CHECK_KEYWORD(_keyword);                            \
 } while(0)
 
@@ -66,7 +67,7 @@ static int program(ParserData* data)
         GENERATE_CODE(generate_function_retval, data->current_id->type);
         GET_TOKEN_AND_CHECK_TYPE(TT_LEFT_BRACKET);
 
-        data->current_id = BST_symtable_Insert(&data->global_table, data->token.Data.string->str, ERROR_INTERNAL);
+        data->current_id = BST_symtable_Insert(&data->global_table, data->token.Data.string->str, (bool*)ERROR_INTERNAL);
 
         GET_TOKEN_AND_CHECK_RULE(parameters);
         GET_TOKEN_AND_CHECK_TYPE(TT_RIGHT_BRACKET);
@@ -139,7 +140,7 @@ static int parameters_no(ParserData* data)
         if (!data->in_definition)
         {
             bool internal_error;
-            if (!(data->rs_id = BST_symtable_Insert(&data->local_table, data->token.Type.string->str, &internal_error)))
+            if (!(data->rs_id = BST_symtable_Insert(&data->local_table, data->token.Data.string->str, &internal_error)))
             {
                 if (internal_error) return ERROR_INTERNAL;
                 else return SEMANTIC_ERR_UNDEFINED_VAR;
@@ -148,7 +149,7 @@ static int parameters_no(ParserData* data)
             GENERATE_CODE(generate_function_param_declare, data->rs_id->identifier, data->parameter_index);
         }
         CHECK_RULE(parameters_no);
-        GET_TOKEN();
+        GET_TOKEN;
         return parameters_no(data);
 
     }
@@ -160,7 +161,7 @@ static int var(ParserData* data)
     // VAR -> INT
     if (data->token.Type == TT_INTEGER)
     {
-        GENERATE_CODE(generate_function_convert_passed_param, TYPE_DOUBLE, TYPE_INT, data->parameter_index);
+        GENERATE_CODE(generate_function_convert_passed_param, TYPE_FLOAT, TYPE_INT, data->parameter_index);
 
         return var(data);
     }
@@ -175,13 +176,6 @@ static int var(ParserData* data)
     else if (data->token.Type == TT_STRING)
     {
         return var(data);
-    }
-    else if (data->token.Type == TT_KEYWORD)
-    {
-        if(!CHECK_KEYWORD(KW_NIL))
-        {
-            return var(data);
-        }
     }
     else
     {
@@ -224,11 +218,11 @@ static int command(ParserData* data)
 
         GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
 
-        GENERATE_CODE(generate_if_else_part, function_id, current_label_index, data->label_deep);
+        GENERATE_CODE(generate_if_else_part, function_id, current_label_index, data->label_depth);
 
         GET_TOKEN_AND_CHECK_RULE(command);
 
-        CHECK_KEYWORD(KEYWORD_END);
+        CHECK_KEYWORD(KW_END);
 
         GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
 
@@ -237,7 +231,7 @@ static int command(ParserData* data)
         data->label_depth--;
         data->in_while_or_if = false;
 
-        GET_TOKEN();
+        GET_TOKEN;
         return command(data);
     }
         // COMMAND -> WHILE EXPR DO EOL COMMAND END
@@ -270,7 +264,7 @@ static int command(ParserData* data)
         data->label_depth--;
         data->in_while_or_if = false;
 
-        GET_TOKEN();
+        GET_TOKEN;
         return command(data);
     }
         // COMMAND -> ID = EXPR EOL /  ID = FUNCTION EOL
@@ -301,13 +295,13 @@ static int command(ParserData* data)
             GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
         }
 
-        GET_TOKEN();
+        GET_TOKEN;
         return command(data);
     }
         // COMMAND -> ε
     else if (data->token.Type == TT_EOL)
     {
-        GET_TOKEN();
+        GET_TOKEN;
         return command(data);
     }
 }
@@ -344,29 +338,6 @@ static int bif(ParserData* data)
         default:
             return SYNTAX_ERR;
     }
-}
-
-static int print(ParserData* data)
-{
-    int result;
-
-    // print -> ε
-    if (data->token.Type == TT_EOL)
-    {
-        return SYNTAX_OK;
-    }
-
-    data->ls_id = BST_symtable_Search(&data->global_table, "%exp_result");
-    if (!data->ls_id) return SEMANTIC_ERR_UNDEFINED_VAR;
-    data->ls_id->type = TYPE_NIL;
-
-    // <print> -> print ( parameters )
-    CHECK_KEYWORD(KW_PRINT);
-    CHECK_TYPE(TT_ASSIGN);
-    CHECK_RULE(parameters);
-    GENERATE_CODE(generate_print);
-    return SYNTAX_OK;
-
 }
 
 static bool init_variables(ParserData* data)

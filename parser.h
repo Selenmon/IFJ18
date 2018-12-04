@@ -11,8 +11,8 @@
 
 typedef struct
 {
-    struct tBSTsymtable global_table;
-    struct tBSTsymtable local_table;
+    tBSTNodePtr global_table;
+    tBSTNodePtr local_table;
     tToken token;
     TData* current_id;
     TData* ls_id;

@@ -78,7 +78,8 @@ int getIdentifier(dynamic_string *string, tToken *Token) {
 int getInteger(dynamic_string *string, tToken *Token) {
 
     char *ptr;
-    int integer = strtol(string->str, &ptr);
+    int integer = 0;
+    strtol(string->str, &ptr,10);
 
     if (*ptr)
         return freeDynamicString(ERROR_INTERNAL, string);
@@ -89,6 +90,12 @@ int getInteger(dynamic_string *string, tToken *Token) {
     return freeDynamicString(SCANNER_TOKEN_OK, string);
 }
 
+void set_dynamic_string(dynamic_string *string)
+{
+    Dynamic_string = string;
+}
+
+
 //Function to get float type of token.
 int getDecimal(dynamic_string *string, tToken *Token) {
 
@@ -98,10 +105,15 @@ int getDecimal(dynamic_string *string, tToken *Token) {
     if (*ptr)
         return freeDynamicString(ERROR_INTERNAL, string);
 
-    Token->Data.integer = decimal;
+    Token->Data.decimal = decimal;
     Token->Type = TT_FLOAT;
 
     return freeDynamicString(SCANNER_TOKEN_OK, string);
+}
+
+void set_source_file(FILE *f)
+{
+    SourceFile = f;
 }
 
 //Function to get appropriate type of token.
@@ -114,15 +126,15 @@ int getToken(tToken *Token) {
 
     tState State = ST_START;
     Token->Type = TT_EMPTY;
-
-    dynamic_string *string;
+    dynamic_string string;
+    dynamic_string *stri = &string;
 
     char c;
     int counter = 0;
     char ascii[2];
 
     //Reading source file.
-    while (c = (getc(SourceFile))) {
+    while (c = (char)(getc(SourceFile))) {
 
         switch (State) {
 
@@ -156,38 +168,38 @@ int getToken(tToken *Token) {
                 }
                 else if (c == '+') {
                     Token->Type = TT_PLUS;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else if (c == '-') {
                     Token->Type = TT_MINUS;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else if (c == '*') {
                     Token->Type = TT_MUL;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else if (c == '/') {
                     Token->Type = TT_DIV;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else if (c == '(') {
                     Token->Type = TT_LEFT_BRACKET;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else if (c == ')') {
                     Token->Type = TT_RIGHT_BRACKET;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else if (c == ',') {
                     Token->Type = TT_COMMA;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else if (c == EOF) {
                     Token->Type = TT_EOF;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else
-                    return freeDynamicString(SCANNER_ERROR_LEX, string);
+                    return freeDynamicString(SCANNER_ERROR_LEX, stri);
 
                 break;
 
@@ -201,13 +213,13 @@ int getToken(tToken *Token) {
 
             case (ST_ASSIGN):
                 if (c == 'b') {
-                    c = (getc(SourceFile));
+                    c = (char)(getc(SourceFile));
                     if (c == 'e') {
-                        c = (getc(SourceFile));
+                        c = (char)(getc(SourceFile));
                         if (c == 'g') {
-                            c = (getc(SourceFile));
+                            c = (char)(getc(SourceFile));
                             if (c == 'i') {
-                                c = (getc(SourceFile));
+                                c = (char)(getc(SourceFile));
                                 if (c == 'n') {
                                     State = ST_BLOCK_COMMENTARY;
                                 }
@@ -221,15 +233,15 @@ int getToken(tToken *Token) {
                 else if (c == ' ') {
                     Token->Type = TT_ASSIGN;
                 }
-                return freeDynamicString(SCANNER_TOKEN_OK, string);
+                return freeDynamicString(SCANNER_TOKEN_OK, stri);
 
             case (ST_BLOCK_COMMENTARY):
                 if (c == '=') {
-                    c = (getc(SourceFile));
+                    c = (char)(getc(SourceFile));
                     if (c == 'e') {
-                        c = (getc(SourceFile));
+                        c = (char)(getc(SourceFile));
                         if (c == 'n') {
-                            c = (getc(SourceFile));
+                            c = (char)(getc(SourceFile));
                             if (c == 'd') {
                                 State = ST_START;
                             }
@@ -240,167 +252,167 @@ int getToken(tToken *Token) {
             case (ST_ID_KEYWORD):
                 if (isalnum(c) || c == '_' || c == '?' || c == '!') {
                     ungetc(c, SourceFile);
-                    getIdentifier(string, Token);
+                    getIdentifier(stri, Token);
                 }
                 else {
 
-                    return freeDynamicString(SCANNER_ERROR_LEX, string);
+                    return freeDynamicString(SCANNER_ERROR_LEX, stri);
                 }
                 break;
 
             case (ST_NUMBER):
                 if (isdigit(c)) {
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else if (c == '.') {
                     State = ST_NUMBER_POINT;
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else if (toupper(c) == 'E') {
                     State = ST_NUMBER_EXPONENT;
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else {
                     ungetc(c, SourceFile);
-                    getInteger(string, Token);
+                    getInteger(stri, Token);
                 }
                 break;
 
             case (ST_NUMBER_POINT):
                 if (isdigit(c)) {
                     State = ST_NUMBER_DECIMAL;
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else {
 
-                    return freeDynamicString(SCANNER_ERROR_LEX, string);
+                    return freeDynamicString(SCANNER_ERROR_LEX, stri);
                 }
                 break;
             case (ST_NUMBER_DECIMAL):
                 if (isdigit(c)) {
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else if (toupper(c) == 'E') {
                     State = ST_NUMBER_EXPONENT;
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else {
                     ungetc(c, SourceFile);
-                    getDecimal(string, Token);
+                    getDecimal(stri, Token);
                 }
                 break;
 
             case (ST_NUMBER_EXPONENT):
                 if (isdigit(c)) {
                     State = ST_NUMBER_EXPONENT_END;
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else if (c == '-' || c == '+') {
                     State = ST_NUMBER_EXPONENT_SIGN;
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else {
 
-                    return freeDynamicString(SCANNER_ERROR_LEX, string);
+                    return freeDynamicString(SCANNER_ERROR_LEX, stri);
                 }
                 break;
             case (ST_NUMBER_EXPONENT_SIGN):
                 if (isdigit(c)) {
                     State = ST_NUMBER_EXPONENT_END;
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else {
 
-                    return freeDynamicString(SCANNER_ERROR_LEX, string);
+                    return freeDynamicString(SCANNER_ERROR_LEX, stri);
                 }
                 break;
 
             case (ST_NUMBER_EXPONENT_END):
                 if (isdigit(c)) {
 
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                 }
                 else {
                     ungetc(c, SourceFile);
-                    getDecimal(string, Token);
+                    getDecimal(stri, Token);
                 }
                 break;
 
             case (ST_STRING):
                 if (c == '"') {
-                    if (!string_cp(string, Token->Data.string)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_cp(stri, Token->Data.string)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                     ;
 
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else if (c == '\\') {
                     State = ST_STRING_ESCAPE;
                 }
                 else {
 
-                    return freeDynamicString(SCANNER_ERROR_LEX, string);
+                    return freeDynamicString(SCANNER_ERROR_LEX, stri);
                 }
                 break;
 
             case (ST_STRING_ESCAPE):
                 if (c == 'n') {
                     c = '\n';
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                     State = ST_STRING;
                 }
                 else if (c == '"')
                 {
                     c = '"';
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                     State = ST_STRING;
                 }
                 else if (c == 't')
                 {
                     c = '\t';
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                     State = ST_STRING;
                 }
                 else if (c == '\\')
                 {
                     c = '\\';
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                     State = ST_STRING;
                 }
                 else if (c == 's')
                 {
                     c = ' ';
-                    if (!string_add(string, c)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, c)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
                     State = ST_STRING;
                 }
@@ -410,7 +422,7 @@ int getToken(tToken *Token) {
                 }
                 else {
 
-                    return freeDynamicString(SCANNER_ERROR_LEX, string);
+                    return freeDynamicString(SCANNER_ERROR_LEX, stri);
                 }
                 break;
 
@@ -422,14 +434,14 @@ int getToken(tToken *Token) {
                 }
                 else if (counter == 0) {
 
-                    return freeDynamicString(SCANNER_ERROR_LEX, string);
+                    return freeDynamicString(SCANNER_ERROR_LEX, stri);
                 }
                 else
                 {
                     long hexa = strtol(ascii, NULL, 16);
 
-                    if (!string_add(string, hexa)) {
-                        return freeDynamicString(ERROR_INTERNAL, string);
+                    if (!string_add(stri, (char)hexa)) {
+                        return freeDynamicString(ERROR_INTERNAL, stri);
                     }
 
                     ungetc(c, SourceFile);
@@ -448,7 +460,7 @@ int getToken(tToken *Token) {
                     ungetc(c, SourceFile);
                     Token->Type = TT_LESS_THAN;
                 }
-                return freeDynamicString(SCANNER_TOKEN_OK, string);
+                return freeDynamicString(SCANNER_TOKEN_OK, stri);
 
             case (ST_MORE_THAN):
                 if (c == '=') {
@@ -458,15 +470,15 @@ int getToken(tToken *Token) {
                     ungetc(c, SourceFile);
                     Token->Type = TT_MORE_THAN;
                 }
-                return freeDynamicString(SCANNER_TOKEN_OK, string);
+                return freeDynamicString(SCANNER_TOKEN_OK, stri);
 
             case (ST_NOT_EQUAL):
                 if (c == '=') {
                     Token->Type = TT_NOT_EQUAL;
-                    return freeDynamicString(SCANNER_TOKEN_OK, string);
+                    return freeDynamicString(SCANNER_TOKEN_OK, stri);
                 }
                 else {
-                    freeDynamicString(SCANNER_ERROR_LEX, string);
+                    freeDynamicString(SCANNER_ERROR_LEX, stri);
                 }
                 break;
             case (ST_EOL):
@@ -476,7 +488,7 @@ int getToken(tToken *Token) {
 
                 ungetc(c, SourceFile);
                 Token->Type = TT_EOL;
-                return freeDynamicString(SCANNER_TOKEN_OK, string);
+                return freeDynamicString(SCANNER_TOKEN_OK, stri);
         }
     }
 }

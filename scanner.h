@@ -46,8 +46,6 @@ typedef enum {
     TT_FLOAT,
     TT_STRING,
 
-    TT_ERROR,
-
     TT_PLUS,
     TT_MINUS,
     TT_MUL,
@@ -113,7 +111,8 @@ typedef struct {
     tTokenData Data;
 
 } tToken;
-
+void set_source_file(FILE *f);
+void set_dynamic_string(dynamic_string *string);
 int freeDynamicString(int errorcode, dynamic_string *string);
 int getIdentifier(dynamic_string *string, tToken *Token);
 int getInteger(dynamic_string *string, tToken *Token);
