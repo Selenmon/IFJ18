@@ -88,8 +88,47 @@ static int program(ParserData* data)
         GET_TOKEN;
         return program(data);
     }
+    // PROGRAM -> MAIN
+	else
+	{
+		return mainbody(data);
+	}
+
+return SYNTAX_ERR;
 
     return SYNTAX_ERR;
+}
+
+static int mainbody(PData* data)
+{
+	int result;
+
+	// PROGRAM -> MAINBODY EOL COMMAND END 
+	{
+		// is everything defined
+		for (int i = 0; i < MAX_SYMTABLE_SIZE; i++)
+			for (Sym_table_item* it = data->global_table[i]; it != NULL; it = it->next)
+				if (!it->data.defined) return SEMANTIC_ERR_UNDEFINED_VARIABLE;
+
+		// in main atm
+		data->in_function = false;
+		data->current_id = NULL;
+		data->label_index = 0;
+
+		GENERATE_CODE(generate_main_start);
+
+		GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
+		GET_TOKEN_AND_CHECK_RULE(command);
+		GET_TOKEN_AND_CHECK_TYPE(TT_EOF);
+
+		GENERATE_CODE(generate_main_end);
+
+		// clear symtable
+		sym_table_free(&data->local_table);
+
+		// NEXT
+		GET_TOKEN();
+		return end(data);
 }
 
 static int end(ParserData* data)
@@ -158,6 +197,7 @@ static int parameters_no(ParserData* data)
 
 static int var(ParserData* data)
 {
+	GENERATE_CODE(generate_function_pass_param, data->token, data->param_index);
     // VAR -> INT
     if (data->token.Type == TT_INTEGER)
     {
@@ -292,6 +332,7 @@ static int command(ParserData* data)
             data->ls_id = BST_symtable_Search(&data->local_table, data->token.Data.string->str);
             if (!data->ls_id) return SEMANTIC_ERR_UNDEFINED_VAR;
             GET_TOKEN_AND_CHECK_RULE(expression);
+            GENERATE_CODE(generate_var_define, data->lhs_id->identifier);
             GET_TOKEN_AND_CHECK_TYPE(TT_EOL);
         }
 
@@ -310,6 +351,9 @@ static int bif(ParserData* data)
 {
     switch(data->token.Type == TT_KEYWORD)
     {
+    	case KW_PRINT:
+            data->rs_id = BST_symtable_Search(&data->global_table, "print");
+            break;
         // BIF -> LENGTH ( PARAMETERS )
         case KW_LENGTH:
             data->rs_id = BST_symtable_Search(&data->global_table, "length");
