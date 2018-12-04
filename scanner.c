@@ -78,9 +78,7 @@ int getIdentifier(dynamic_string *string, tToken *Token) {
 int getInteger(dynamic_string *string, tToken *Token) {
 
     char *ptr;
-    int integer = 0;
-    strtol(string->str, &ptr,10);
-
+    int integer = strtol(string->str, &ptr,10);
     if (*ptr)
         return freeDynamicString(ERROR_INTERNAL, string);
 
