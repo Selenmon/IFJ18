@@ -4,23 +4,11 @@
 #include "parser.h"
 #include "code_generator.h"
 
-
-//#define DEBUG 1
-
-
 int main()
 {
     FILE* source_file;
 
-#ifdef DEBUG
-    if (!(source_file = fopen("test.bas", "r")))
-	{
-		source_file = stdin;
-	}
-#else
     source_file = stdin;
-#endif
-
     set_source_file(source_file);
 
     int error_code;

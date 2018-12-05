@@ -233,9 +233,9 @@ static Prec_rules test_rule(int num, Token_stack_item* op1, Token_stack_item* op
                         return NOT_RULE;
                 }
             }
+        default:
             return NOT_RULE;
     }
-    return NOT_RULE;
 }
 
 
@@ -243,9 +243,6 @@ static int check_semantics(Prec_rules rule, Token_stack_item* op1, Token_stack_i
 {
     bool retype_op1_to_double = false;
     bool retype_op3_to_double = false;
-    bool retype_op1_to_integer = false;
-    bool retype_op3_to_integer = false;
-
     if (rule == OPERAND)
     {
         if (op1->data_type == TYPE_NIL)
@@ -347,24 +344,13 @@ static int check_semantics(Prec_rules rule, Token_stack_item* op1, Token_stack_i
 
     if (retype_op1_to_double)
     {
-        GENERATE_CODE(generate_stack_op2_to_double);
+        GENERATE_CODE(generate_stack_op2_to_float);
     }
 
     if (retype_op3_to_double)
     {
-        GENERATE_CODE(generate_stack_op1_to_double);
+        GENERATE_CODE(generate_stack_op1_to_float);
     }
-
-    if (retype_op1_to_integer)
-    {
-        GENERATE_CODE(generate_stack_op2_to_integer);
-    }
-
-    if (retype_op3_to_integer)
-    {
-        GENERATE_CODE(generate_stack_op1_to_integer);
-    }
-
     return SYNTAX_OK;
 }
 
@@ -480,6 +466,7 @@ int expression(ParserData* data)
                 else
                     FREE_RESOURCES_RETURN(SYNTAX_ERR);
                 break;
+            default:SYNTAX_OK;
         }
     } while (!success);
 

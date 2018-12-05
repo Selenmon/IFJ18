@@ -207,7 +207,6 @@ void code_generator_flush(FILE *destin_file)
 
 bool generate_main_start()
 {
-    ADD_INST("\n# Main");
     ADD_INST("LABEL $$main");
     ADD_INST("CREATEFRAME");
     ADD_INST("PUSHFRAME");
@@ -217,7 +216,6 @@ bool generate_main_start()
 
 bool generate_main_end(char *endval)
 {
-    ADD_INST("# End of main");
     ADD_INST("POPFRAME");
     ADD_INST("CLEARS");
     ADD_INST("EXIT");ADD_CODE(endval);
@@ -390,15 +388,6 @@ bool generate_var_define(char *var_id)
     return true;
 }
 
-bool generate_var_default_value(char *var_id, Data_Type type)
-{
-    ADD_CODE("MOVE LF@"); ADD_CODE(var_id); ADD_CODE(" ");
-    if (!generate_default_var_value(type)) return false;
-    ADD_CODE("\n");
-
-    return true;
-}
-
 bool generate_push(tToken token)
 {
     ADD_CODE("PUSHS ");
@@ -503,36 +492,17 @@ bool generate_save_expression_result(char *var_id, Data_Type ret_type, Data_Type
 }
 
 
-bool generate_stack_op1_to_double()
+bool generate_stack_op1_to_float()
 {
     ADD_INST("INT2FLOATS");
 
     return true;
 }
 
-
-bool generate_stack_op1_to_integer()
-{
-    ADD_INST("FLOAT2R2EINTS");
-
-    return true;
-}
-
-
-bool generate_stack_op2_to_double()
+bool generate_stack_op2_to_float()
 {
     ADD_INST("POPS GF@%tmp_op1");
     ADD_INST("INT2FLOATS");
-    ADD_INST("PUSHS GF@%tmp_op1");
-
-    return true;
-}
-
-
-bool generate_stack_op2_to_integer()
-{
-    ADD_INST("POPS GF@%tmp_op1");
-    ADD_INST("FLOAT2R2EINTS");
     ADD_INST("PUSHS GF@%tmp_op1");
 
     return true;

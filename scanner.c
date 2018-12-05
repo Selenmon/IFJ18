@@ -132,7 +132,7 @@ int getToken(tToken *Token) {
     char ascii[2];
 
     //Reading source file.
-    while (c = (char)(getc(SourceFile))) {
+    while ((c = (char)(getc(SourceFile)))) {
 
         switch (State) {
 

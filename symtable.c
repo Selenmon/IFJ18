@@ -26,6 +26,7 @@ tBSTNodePtr* BST_check_leafnodes(tBSTNodePtr *RootPtr){
     {
         BST_check_leafnodes((tBSTNodePtr*)(*RootPtr)->LPtr);
     }
+    return 0;
 }
 
 TData *BST_symtable_Insert (tBSTNodePtr *RootPtr, const char *K, bool* alloc_failed){
@@ -104,6 +105,7 @@ TData *BST_symtable_Search (tBSTNodePtr *RootPtr,const char *K){
     else{
         return NULL;
     }
+    return NULL;
 }
 
 

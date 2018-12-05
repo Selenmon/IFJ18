@@ -28,7 +28,7 @@ return result
 if (data->token.Type != (_type)) return SYNTAX_ERR
 
 #define CHECK_RULE(rule)                                    \
-result = rule(data) ? result : 0
+(result = rule(data)) ? result : 0
 
 #define CHECK_KEYWORD(_keyword)                             \
 if (data->token.Type != TT_KEYWORD || data->token.Data.Keyword != (_keyword)) return SYNTAX_ERR
@@ -44,13 +44,13 @@ do {                                                    \
 GET_TOKEN;                                            \
 CHECK_RULE(rule);                                       \
 } while(0)
-
+/*
 #define GET_TOKEN_AND_CHECK_KEYWORD(_keyword)       \
 do {                                            \
 GET_TOKEN;                                        \
 CHECK_KEYWORD(_keyword);                            \
 } while(0)
-
+*/
 static int program(ParserData* data)
 {
     int result;
@@ -93,10 +93,23 @@ static int program(ParserData* data)
     {
         return mainbody(data);
     }
+}
 
-    return SYNTAX_ERR;
-
-    return SYNTAX_ERR;
+static int check_table(tBSTNodePtr *RootPtr){
+    if(!(*RootPtr)->LPtr && !(*RootPtr)->RPtr)
+    {
+        if (!(*RootPtr)->data.defined)
+            return SEMANTIC_ERR_UNDEFINED_VAR;
+    }
+    if (!(*RootPtr)->LPtr)
+    {
+        BST_check_leafnodes((tBSTNodePtr*)(*RootPtr)->RPtr);
+    }
+    if (!(*RootPtr)->RPtr)
+    {
+        BST_check_leafnodes((tBSTNodePtr*)(*RootPtr)->LPtr);
+    }
+    return SYNTAX_OK;
 }
 
 static int mainbody(ParserData* data) {
@@ -105,11 +118,9 @@ static int mainbody(ParserData* data) {
     // PROGRAM -> MAINBODY EOL COMMAND END
 
     // is everything defined
-    for (tBSTNodePtr it = data->global_table; it != NULL ; it = it->LPtr ) {
-        if (!it->data.defined) return SEMANTIC_ERR_UNDEFINED_VAR;
-    }
-    for (tBSTNodePtr it = data->global_table; it != NULL ; it = it->RPtr ) {
-        if (!it->data.defined) return SEMANTIC_ERR_UNDEFINED_VAR;
+    if (check_table((tBSTNodePtr*)data->global_table) == SEMANTIC_ERR_UNDEFINED_VAR)
+    {
+        return SEMANTIC_ERR_UNDEFINED_VAR;
     }
     // in main atm
     data->in_function = false;
@@ -154,7 +165,7 @@ static int parameters(ParserData *data) {
     data->parameter_index = 0;
 
     // PARAMETERS -> VAR PARAMETERS_NO
-    if (CHECK_RULE(var) == var)
+    if (CHECK_RULE(var) == var(data))
     {
         CHECK_RULE(parameters_no);
         if (data->parameter_index + 1 != data->current_id->params->len)
@@ -192,23 +203,63 @@ static int parameters_no(ParserData *data) {
 static int var(ParserData *data) {
     GENERATE_CODE(generate_function_pass_param, data->token, data->parameter_index);
     // VAR -> INT
-    if (data->token.Type == TT_INTEGER) {
-        GENERATE_CODE(generate_function_convert_passed_param, TYPE_FLOAT, TYPE_INT, data->parameter_index);
+    switch (data->token.Type) {
+        case TT_INTEGER:
+            {
+            GENERATE_CODE(generate_function_convert_passed_param, TYPE_FLOAT, TYPE_INT, data->parameter_index);
 
-        return var(data);
-    }
+
+            return var(data);
+        }
+
         // VAR -> FLOAT
-    else if (data->token.Type == TT_FLOAT) {
+    case TT_FLOAT: {
         GENERATE_CODE(generate_function_convert_passed_param, TYPE_INT, TYPE_FLOAT, data->parameter_index);
 
         return var(data);
     }
         // VAR -> STRING
-    else if (data->token.Type == TT_STRING) {
+    case TT_STRING: {
         return var(data);
-    } else {
-        return SYNTAX_ERR;
     }
+        case TT_IDENTIFIER:
+        {
+            TData* id = BST_symtable_Search(&data->local_table,data->token.Data.string->str);
+
+            switch (id->type)
+            {
+                case TYPE_INT:
+                {
+                    if (data->rs_id->params->str[data->parameter_index] == 's')
+                        return SEMANTIC_ERR_TYPE_COMPAT;
+                    if (data->rs_id->params->str[data->parameter_index] == 'd')
+                        GENERATE_CODE(generate_function_convert_passed_param, TYPE_INT, TYPE_FLOAT, data->parameter_index);
+
+                    break;
+                }
+                case TYPE_FLOAT:
+                    if (data->rs_id->params->str[data->parameter_index] == 's')
+                        return SEMANTIC_ERR_TYPE_COMPAT;
+                    if (data->rs_id->params->str[data->parameter_index] == 'i')
+                        GENERATE_CODE(generate_function_convert_passed_param, TYPE_FLOAT, TYPE_INT, data->parameter_index);
+
+                    break;
+
+                case TYPE_STRING:
+                    if (data->rs_id->params->str[data->parameter_index] != 's')
+                        return SEMANTIC_ERR_TYPE_COMPAT;
+
+                    break;
+
+                default: // shouldn't get here
+                    return ERROR_INTERNAL;
+            }
+            break;
+            }
+        default:
+            return SYNTAX_ERR;
+        }
+    data->parameter_index++;
     return SYNTAX_OK;
 }
 
@@ -326,41 +377,45 @@ static int command(ParserData *data) {
         GET_TOKEN;
         return command(data);
     }
+    return SYNTAX_OK;
 }
 
 static int bif(ParserData *data) {
-    switch (data->token.Type == TT_KEYWORD) {
-        case KW_PRINT:
-            data->rs_id = BST_symtable_Search(&data->global_table, "print");
-            break;
-            // BIF -> LENGTH ( PARAMETERS )
-        case KW_LENGTH:
-            data->rs_id = BST_symtable_Search(&data->global_table, "length");
-            break;
+    if (data->token.Type == TT_KEYWORD) {
+        switch (data->token.Data.Keyword) {
+            case KW_PRINT:
+                data->rs_id = BST_symtable_Search(&data->global_table, "print");
+                break;
+                // BIF -> LENGTH ( PARAMETERS )
+            case KW_LENGTH:
+                data->rs_id = BST_symtable_Search(&data->global_table, "length");
+                break;
 
-            // BIF -> SUBSTR ( PARAMETERS )
-        case KW_SUBSTR:
-            data->rs_id = BST_symtable_Search(&data->global_table, "substr");
-            break;
+                // BIF -> SUBSTR ( PARAMETERS )
+            case KW_SUBSTR:
+                data->rs_id = BST_symtable_Search(&data->global_table, "substr");
+                break;
 
-            // BIF -> NIL ( PARAMETERS )
-        case KW_NIL:
-            data->rs_id = BST_symtable_Search(&data->global_table, "nil");
-            break;
+                // BIF -> NIL ( PARAMETERS )
+            case KW_NIL:
+                data->rs_id = BST_symtable_Search(&data->global_table, "nil");
+                break;
 
-            // BIF -> ORD ( PARAMETERS )
-        case KW_ORD:
-            data->rs_id = BST_symtable_Search(&data->global_table, "ord");
-            break;
+                // BIF -> ORD ( PARAMETERS )
+            case KW_ORD:
+                data->rs_id = BST_symtable_Search(&data->global_table, "ord");
+                break;
 
-            // BIF -> CHR ( PARAMETERS )
-        case KW_CHR:
-            data->rs_id = BST_symtable_Search(&data->global_table, "chr");
-            break;
+                // BIF -> CHR ( PARAMETERS )
+            case KW_CHR:
+                data->rs_id = BST_symtable_Search(&data->global_table, "chr");
+                break;
 
-        default:
-            return SYNTAX_ERR;
+            default:
+                return SYNTAX_ERR;
+        }
     }
+    return SYNTAX_OK;
 }
 
 static bool init_variables(ParserData *data) {

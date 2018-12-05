@@ -175,7 +175,7 @@ bool generate_save_expression_result(char *var_id, Data_Type ret_type, Data_Type
  *
  * @return True if successful, false otherwise
  */
-bool generate_stack_op1_to_double();
+bool generate_stack_op1_to_float();
 
 /**
  * @brief Function generates code for conversion of data-stack top item to integer
@@ -189,7 +189,7 @@ bool generate_stack_op1_to_integer();
  *
  * @return True if successful, false otherwise
  */
-bool generate_stack_op2_to_double();
+bool generate_stack_op2_to_float();
 
 /**
  * @brief Function generates code for conversion of data-stack top-1 item to integer
