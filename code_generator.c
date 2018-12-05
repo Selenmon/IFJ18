@@ -383,23 +383,12 @@ bool generate_function_pass_param(tToken token, int index)
     return true;
 }
 
-
-bool generate_function_return(char *function_id)
-{
-    ADD_INST("MOVE LF@%retval GF@%exp_result");
-    ADD_CODE("JUMP $"); ADD_CODE(function_id); ADD_CODE("%return\n");
-
-    return true;
-}
-
-
 bool generate_var_define(char *var_id)
 {
     ADD_CODE("DEFVAR LF@"); ADD_CODE(var_id); ADD_CODE("\n");
 
     return true;
 }
-
 
 bool generate_var_default_value(char *var_id, Data_Type type)
 {

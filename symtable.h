@@ -21,11 +21,11 @@ typedef struct {
     bool globalvar;
 }TData ;
 
-typedef struct tBSTsymtable {
+typedef struct {
     char Key;
     TData data;
-    struct tBSTsymtable * LPtr;
-    struct tBSTsymtable * RPtr;
+    struct tBSTNodePtr * LPtr;
+    struct tBSTNodePtr * RPtr;
 } *tBSTNodePtr ;
 
 /*functions*/
@@ -36,6 +36,15 @@ typedef struct tBSTsymtable {
  * @param tBSTNodePtr pointer to root of tree
  */
 void BST_symtable_init (tBSTNodePtr *);
+
+/**
+ * @brief Function returns leaf node
+ *
+ * @param RootPtr pointer to root of tree
+ * @return pointer to leaf node
+ */
+
+tBSTNodePtr* BST_check_leafnodes(tBSTNodePtr *RootPtr);
 
 /**
  * @brief  Function finds symbol and returns its data node

@@ -33,14 +33,14 @@ void code_generator_flush(FILE *destination_file);
  *
  * @return True if successful, false otherwise
  */
-bool generate_main_scope_start();
+bool generate_main_start();
 
 /**
  * @brief Function generates end for main main program code
  *
  * @return True if successful, false otherwise
  */
-bool generate_main_scope_end();
+bool generate_main_end();
 
 /**
  * @brief Function generates code for start of function
@@ -120,14 +120,6 @@ bool generate_function_pass_param(tToken token, int index);
 bool generate_function_convert_passed_param(Data_Type from, Data_Type to, int index);
 
 /**
- * @brief Function generates code for return statement in function
- *
- * @param function_id Function identifier
- * @return True if successful, false otherwise
- */
-bool generate_function_return(char *function_id);
-
-/**
  * @brief Function generates code for variable definition
  *
  * @param var_id Variable identifier
@@ -143,22 +135,6 @@ bool generate_var_define(char *var_id);
  * @return True if successful, false otherwise
  */
 bool generate_var_default_value(char *var_id, Data_Type type);
-
-/**
- * @brief Function code for generates input statement
- *
- * @param var_id Identifier of variable read value
- * @param type Data type of read value
- * @return True if successful, false otherwise
- */
-bool generate_input(char *var_id, Data_Type type);
-
-/**
- * @brief Function generates code for print of expression result
- *
- * @return True if successful, false otherwise
- */
-bool generate_print();
 
 /**
  * @brief Function generates code for push value to data-stack
